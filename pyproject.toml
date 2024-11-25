@@ -12,6 +12,7 @@ dependencies = [
     "jupyterlab>=3.0",
     "kedro~=0.19.9",
     "notebook",
+    "requests>=2.32.3",
 ]
 requires-python = "==3.11.*"
 license = {text = "None"}

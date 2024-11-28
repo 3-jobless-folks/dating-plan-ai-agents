@@ -16,10 +16,10 @@ const DatePlanForm = () => {
 		activity_preference: "",
 	});
 
-	const [result, setResult] = useState(""); // Initialize result state
-	const [errors, setErrors] = useState({}); // For storing validation errors
+	const [errors, setErrors] = useState({}); // Validation errors
 	const navigate = useNavigate();
 
+	// Handle form input changes
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({
@@ -28,7 +28,7 @@ const DatePlanForm = () => {
 		});
 	};
 
-	// Simple validation function
+	// Form validation
 	const validateForm = () => {
 		const newErrors = {};
 		for (const key in formData) {
@@ -37,28 +37,27 @@ const DatePlanForm = () => {
 			}
 		}
 		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0; // If no errors, return true
+		return Object.keys(newErrors).length === 0;
 	};
 
+	// Submit the form
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
-		// Validate the form before sending
+		// Validate form before submitting
 		if (!validateForm()) {
-			return; // Don't submit if validation fails
+			return;
 		}
 
-		// Send request to FastAPI
 		try {
+			// Send request to FastAPI
 			const response = await axios.post("http://localhost:8000/plan", formData);
 			console.log("Backend response:", response.data);
 
-			// Navigate to the result page and pass the response data
-
+			// Navigate to the result page with response data
 			navigate("/result", { state: { result: response.data.result } });
 		} catch (error) {
 			console.error("Error sending data to backend", error);
-			setResult("An error occurred while fetching the data.");
 		}
 	};
 
@@ -73,6 +72,7 @@ const DatePlanForm = () => {
 					{errors.start_time && <div className="invalid-feedback">{errors.start_time}</div>}
 				</div>
 
+				{/* Repeat similar structure for other inputs */}
 				{/* End Time */}
 				<div className="mb-3">
 					<label className="form-label">End Time</label>
@@ -125,15 +125,6 @@ const DatePlanForm = () => {
 					Submit
 				</button>
 			</form>
-
-			{/* Display the result */}
-			{result && (
-				<div className="mt-4">
-					<h3>Final Date Plan</h3>
-					{/* Display the result as a formatted JSON object */}
-					<pre>{JSON.stringify(result, null, 2)}</pre>
-				</div>
-			)}
 		</div>
 	);
 };

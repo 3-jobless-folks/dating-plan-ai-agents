@@ -5,12 +5,11 @@ import { useLocation } from "react-router-dom";
 
 const DatePlanResult = () => {
 	const location = useLocation();
-	const { activities } = location.state?.result || {}; // Get the activities from the state passed from the previous page
+	const { activities } = location.state?.result || {};
 
 	return (
 		<div className="container mt-5">
 			<h2>Final Date Plan</h2>
-			{/* Check if activities are available */}
 			{activities ? (
 				<div>
 					<h3>Activities</h3>

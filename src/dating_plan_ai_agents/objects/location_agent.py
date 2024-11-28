@@ -1,4 +1,4 @@
-from dating_plan_ai_agents.objects.base_agent_untested import BaseAgent
+from dating_plan_ai_agents.objects.base_agent import BaseAgent
 from dating_plan_ai_agents.objects.state import GraphState
 
 

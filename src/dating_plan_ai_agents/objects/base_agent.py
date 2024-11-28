@@ -7,7 +7,7 @@ class BaseAgent(AbstractAgent):
     """Base class for a general agent with memory and tools."""
 
     def __init__(self):
-        super().__init__()
+        pass
 
     def _get_current_state(self, state: GraphState):
         self.location_feedback = state.get(

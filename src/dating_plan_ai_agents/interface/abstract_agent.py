@@ -7,13 +7,12 @@ from dating_plan_ai_agents.objects.memory_untested import Memory
 from dating_plan_ai_agents.objects.tools_untested import Tools
 from dating_plan_ai_agents.objects.llm import LLM
 
-load_dotenv()
-
 
 class AbstractAgent(ABC):
     """Abstract class for a general agent with memory and tools."""
 
     def __init__(self):
+        load_dotenv()
         self.memory = Memory()
         self.tools = Tools()
         self.llm_caller = LLM()

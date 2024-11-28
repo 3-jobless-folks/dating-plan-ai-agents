@@ -3,9 +3,9 @@ from dating_plan_ai_agents.objects.state import GraphState
 
 
 class InputValidator(BaseAgent):
-    def __init__(self, llm_caller):
+
+    def __init__(self):
         super().__init__()
-        self.llm_caller = llm_caller
         self.start_time = None
         self.end_time = None
         self.indoor_outdoor = None
@@ -37,7 +37,7 @@ class InputValidator(BaseAgent):
     def revierwer_prompt(self, value):
         self.reviewer_prompt = value
 
-    def _get_current_state(self, state: GraphState):
+    def _get_additional_state(self, state: GraphState):
         # Collect the necessary inputs from the state
         self.start_time = state.get("start_time", "")
         self.end_time = state.get("end_time", "")
@@ -49,6 +49,7 @@ class InputValidator(BaseAgent):
 
     def run(self, state: GraphState) -> GraphState:
         self._get_current_state(state)
+        self._get_additional_state(state)
         user_input = (
             f"Start Time: {self.start_time}, End Time: {self.end_time}, "
             f"Indoor/Outdoor Preference: {self.indoor_outdoor}, "
@@ -60,14 +61,14 @@ class InputValidator(BaseAgent):
         custom_params = {
             "user_input": user_input,
         }
-        results = self._parse_query(
+        self.input_feedback = self._parse_query(
             state, query=self.reviewer_prompt, custom_params=custom_params
         )
         print(
-            f"\nInput Feedback for iteration {state.get('total_iterations')}: {results}"
+            f"\nInput Feedback for iteration {state.get('total_iterations')}: {self.input_feedback}"
         )
         return {
-            "input_feedback": results,  # Save the feedback here
+            "input_feedback": self.input_feedback,  # Save the feedback here
             "total_iterations": state.get("total_iterations", 0),
             "start_time": self.start_time,
             "end_time": self.end_time,

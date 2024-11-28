@@ -7,24 +7,23 @@ class LocationAgent(BaseAgent):
     def __init__(self):
         super().__init__()
         self.location_prompt = (
-            "Given the schedule feedback, if available from: {schedule_feedback}.\n"
+            "Given the previous location suggestions if any: {location_feedback}.\n"
+            "And given the schedule feedback, if available from: {schedule_feedback}.\n"
             "And given the budget feedback, if available from: {budget_feedback}.\n"
-            "Select suitable locations to fit into the schedule based on the user's preferences.\n"
+            "Select suitable locations for the user's date.\n"
+            "Ensure all user preferences are taken into account.\n"
             "Provide a brief location feedback for each location chosen. "
-            "The user's preferences are: {user_input}.\n"
+            "The user's preferences are: {input_feedback}.\n"
         )
         self.retrieval_prompt = (
             "Based on the location_feedback: {location_feedback}.\n"
-            "Generate a summary or description of the user's preferences for a date\n"
+            "Generate a summary or description of the location feedback.\n"
         )
         self.final_location_prompt = (
             "Based on the current feedback and location suggestions: {final_query}.\n\n"
             "Generate a location feedback that summarizes the user's preferences for a date.\n"
             "You should use exact location suggestions if possible.\n"
         )
-        self.budget_feedback = ""
-        self.schedule_feedback = ""
-        self.user_input = ""
 
     ### Getters and Setters to change prompt template
     @property
@@ -51,20 +50,13 @@ class LocationAgent(BaseAgent):
     def final_location_prompt(self, value):
         self.final_location_prompt = value
 
-    @budget_feedback.setter
-    def budget_feedback(self, value):
-        self.budget_feedback = value
-
     # Other methods
-    def _get_current_state(self, state):
-        self.user_input = state.get("input_feedback", "").strip()
-        self.schedule_feedback = state.get("schedule_feedback", "").strip()
-        self.budget_feedback = state.get("budget_feedback", "").strip()
 
     def run(self, state: GraphState) -> GraphState:
         self._get_current_state(state)
         custom_params_location = {
-            "user_input": self.user_input,
+            "location_feedback": self.location_feedback,
+            "input_feedback": self.input_feedback,
             "schedule_feedback": self.schedule_feedback,
             "budget_feedback": self.budget_feedback,
         }
@@ -89,15 +81,15 @@ class LocationAgent(BaseAgent):
             original_query=query, augmented_query=augmented_query
         ).strip()  # Add original and summarized query
 
-        final_feedback = self._parse_query(
+        self.location_feedback = self._parse_query(
             query=self.final_location_prompt, custom_params={"final_query": final_query}
         ).strip()
 
         print(
-            f"\nFinal Feedback for loop {state.get('total_iterations')}: {final_feedback}"
+            f"\nFinal Location Feedback for loop {state.get('total_iterations')}: {self.location_feedback}"
         )
         return {
             "original_query": state.get("original_query", ""),
-            "location_feedback": final_feedback,  # Save the feedback here
+            "location_feedback": self.location_feedback,  # Save the feedback here
             "total_iterations": state.get("total_iterations", 0),
         }

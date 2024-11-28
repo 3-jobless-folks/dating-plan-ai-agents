@@ -10,7 +10,14 @@ class BaseAgent(AbstractAgent):
         super().__init__()
 
     def _get_current_state(self, state: GraphState):
-        pass
+        self.location_feedback = state.get(
+            "location_feedback", "No specific location yet"
+        )
+        self.budget_feedback = state.get("budget_feedback", "No budget feedback yet")
+        self.input_feedback = state.get("input_feedback", "No input feedback yet")
+        self.schedule_feedback = state.get(
+            "schedule_feedback", "No schedule feedback yet"
+        )
 
     def _parse_query(self, query: str, **kwargs) -> str:
         """Create first query"""

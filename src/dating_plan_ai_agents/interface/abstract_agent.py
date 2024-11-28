@@ -20,6 +20,10 @@ class AbstractAgent(ABC):
         self.pinecone_manager = PineconeManager(
             pc_api_key="PINECONE_KEY", openai_key="API_KEY", index_name="test1"
         )
+        self.budget_feedback = "No specific budget yet"
+        self.location_feedback = "No specific locations yet"
+        self.schedule_feedback = "No specific schedule yet"
+        self.input_feedback = "No specific inputs yet"
 
     @abstractmethod
     def _get_current_state(self) -> dict[str, any]:

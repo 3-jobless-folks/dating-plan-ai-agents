@@ -26,6 +26,36 @@ class LocationAgent(BaseAgent):
         self.schedule_feedback = ""
         self.user_input = ""
 
+    ### Getters and Setters to change prompt template
+    @property
+    def location_prompt(self):
+        return self.location_prompt
+
+    @location_prompt.setter
+    def location_prompt(self, value):
+        self.location_prompt = value
+
+    @property
+    def retrieval_prompt(self):
+        return self.retrieval_prompt
+
+    @retrieval_prompt.setter
+    def retrieval_prompt(self, value):
+        self.retrieval_prompt = value
+
+    @property
+    def final_location_prompt(self):
+        return self.final_location_prompt
+
+    @final_location_prompt.setter
+    def final_location_prompt(self, value):
+        self.final_location_prompt = value
+
+    @budget_feedback.setter
+    def budget_feedback(self, value):
+        self.budget_feedback = value
+
+    # Other methods
     def _get_current_state(self, state):
         self.user_input = state.get("input_feedback", "").strip()
         self.schedule_feedback = state.get("schedule_feedback", "").strip()

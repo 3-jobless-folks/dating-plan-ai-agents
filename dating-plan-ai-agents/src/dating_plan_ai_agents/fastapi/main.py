@@ -33,7 +33,7 @@ class DatePlanRequest(BaseModel):
     budget: Optional[str] = None  # User's budget
     food_preference: Optional[str] = None  # Food preferences (e.g., vegetarian, etc.)
     activity_preference: Optional[str] = (
-        None  # Activity preference (e.g., relaxing, adventurous)
+        None  # Activity preference (e.g., relaxing, adventurous)  ##
     )
 
 

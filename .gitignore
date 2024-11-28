@@ -10,8 +10,8 @@ conf/local/**
 conf/**/*credentials*
 
 # ignore everything in the following folders
-**data/**
-**logs/**
+**/data/**
+**/logs/**
 
 # except their sub-folders
 !data/**/
@@ -156,7 +156,7 @@ env.bak/
 venv.bak/
 
 # mkdocs documentation
-/site
+**/site
 
 # mypy
 .mypy_cache/
@@ -165,15 +165,15 @@ venv.bak/
 mlruns/*
 
 # dependencies
-/node_modules
-/.pnp
+**/node_modules
+**/.pnp
 .pnp.js
 
 # testing
-/coverage
+**/coverage
 
 # production
-/build
+**/build
 
 # misc
 .DS_Store

@@ -1,0 +1,61 @@
+[project]
+name = "dating-plan-ai-agents"
+readme = "README.md"
+dynamic = [ "dependencies", "version",]
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Samuel Koh Zhi Kang", email = "samuelkohzk@gmail.com"},
+]
+dependencies = [
+    "ipython>=8.10",
+    "jupyterlab>=3.0",
+    "kedro~=0.19.9",
+    "notebook",
+    "requests>=2.32.3",
+]
+requires-python = "==3.11.*"
+license = {text = "None"}
+
+[project.scripts]
+dating-plan-ai-agents = "dating_plan_ai_agents.__main__:main"
+
+[project.optional-dependencies]
+dev = [ "pytest-cov~=3.0", "pytest-mock>=1.7.1, <2.0", "pytest~=7.2", "ruff~=0.1.8",]
+
+[tool.kedro]
+package_name = "dating_plan_ai_agents"
+project_name = "dating-plan-ai-agents"
+kedro_init_version = "0.19.9"
+tools = [ "Linting", "Testing", "Custom Logging", "Data Structure",]
+example_pipeline = "False"
+source_dir = "src"
+
+[tool.ruff]
+line-length = 88
+show-fixes = true
+select = [ "F", "W", "E", "I", "UP", "PL", "T201",]
+ignore = [ "E501",]
+
+[tool.pdm]
+distribution = false
+[tool.pytest.ini_options]
+addopts = "--cov-report term-missing --cov src/dating_plan_ai_agents -ra"
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+exclude_lines = [ "pragma: no cover", "raise NotImplementedError",]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.setuptools.dynamic.dependencies]
+file = "requirements.txt"
+
+[tool.setuptools.dynamic.version]
+attr = "dating_plan_ai_agents.__version__"
+
+[tool.setuptools.packages.find]
+where = [ "src",]
+namespaces = false

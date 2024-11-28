@@ -13,8 +13,8 @@ class GraphState(TypedDict):
     start_time: Optional[str] = None  # Start time
     end_time: Optional[str] = None  # End time
     indoor_outdoor: Optional[str] = None  # Indoor or outdoor preference
-    country: Optional[int] = None  # Country
-    budget: Optional[float] = None  # User's budget
+    country: Optional[str] = None  # Country
+    budget: Optional[str] = None  # User's budget
     food_preference: Optional[str] = None  # Food preferences (e.g., vegetarian, etc.)
     activity_preference: Optional[str] = (
         None  # Activity preference (e.g., relaxing, adventurous)

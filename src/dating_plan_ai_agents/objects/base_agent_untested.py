@@ -1,50 +1,42 @@
-from abc import ABC, abstractmethod
+from typing import Any
+from dating_plan_ai_agents.objects.state import GraphState
+from dating_plan_ai_agents.interface.abstract_agent import AbstractAgent
 
-from dating_plan_ai_agents.objects.memory_untested import Memory
-from dating_plan_ai_agents.objects.tools_untested import Tools
 
-
-class AbstractAgent(ABC):
-    """Abstract class for a general agent with memory and tools."""
+class BaseAgent(AbstractAgent):
+    """Base class for a general agent with memory and tools."""
 
     def __init__(self):
-        self.memory = Memory()
-        self.tools = Tools()
+        super().__init__()
 
-    @abstractmethod
-    def _parse_query(self, query: str) -> dict[str, any]:
-        """Parse the user's query into intent and additional details."""
+    def _get_current_state(self, state: GraphState):
         pass
 
-    @abstractmethod
-    def _decide_action(self, parsed_query: dict[str, any]) -> str:
-        """Decide what action to take based on the parsed query."""
-        pass
+    def _parse_query(self, query: str, **kwargs) -> str:
+        """Create first query"""
+        agent_feedback = self.llm_caller.get_llm_response(query.format(**kwargs))
+        return agent_feedback
 
-    @abstractmethod
+    def _summarize_query(self, query: str, **kwargs) -> str:
+        """Summarize the user's query using the chosen LLM."""
+        summary_feedback = self._parse_query(query, **kwargs)
+        return summary_feedback
+
     def _retrieve_documents(self, query: str, top_k: int) -> list[str]:
         """Retrieve relevant documents for the query."""
-        pass
-
-    @abstractmethod
-    def _generate_response(self, augmented_query: str) -> str:
-        """Generate a response using the chosen LLM."""
-        pass
-
-    @abstractmethod
-    def run(self, query: str) -> str:
-        """Main workflow for handling user queries."""
-        # parsed_query = self._parse_query(query)
-        # action = self._decide_action(parsed_query)
-        # response = self._execute_action(action, parsed_query["details"])
-        # self.memory.store(query, response)
-        # return response
-        pass
+        results = self.pinecone_manager.retrieve_similar_documents(query, top_k=top_k)
+        results = ("\n").join(results)
+        return results
 
     def _augment_query(self, query: str, documents: list[str]) -> str:
         """Combine the query with retrieved documents."""
         context = "\n".join(documents)
         return f"Query: {query}\nContext:\n{context}\nAnswer:"
+
+    def _generate_final_query(self, original_query: str, augmented_query: str) -> str:
+        """Generate a response using the chosen LLM."""
+        final_query = "\n".join([original_query, augmented_query])
+        return final_query
 
     def _execute_action(self, action: str, query_details: any) -> str:
         """Execute the decided action."""
@@ -57,3 +49,7 @@ class AbstractAgent(ABC):
             return self.tools.execute(tool_name, query_details)
         else:
             return self._generate_response(query_details)
+
+    def run(self, state) -> str:
+        """Main workflow for handling user queries."""
+        pass

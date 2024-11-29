@@ -25,31 +25,6 @@ class LocationAgent(BaseAgent):
             "You should use exact location suggestions if possible.\n"
         )
 
-    ### Getters and Setters to change prompt template
-    @property
-    def location_prompt(self):
-        return self.location_prompt
-
-    @location_prompt.setter
-    def location_prompt(self, value):
-        self.location_prompt = value
-
-    @property
-    def retrieval_prompt(self):
-        return self.retrieval_prompt
-
-    @retrieval_prompt.setter
-    def retrieval_prompt(self, value):
-        self.retrieval_prompt = value
-
-    @property
-    def final_location_prompt(self):
-        return self.final_location_prompt
-
-    @final_location_prompt.setter
-    def final_location_prompt(self, value):
-        self.final_location_prompt = value
-
     # Other methods
 
     def run(self, state: GraphState) -> GraphState:
@@ -60,13 +35,11 @@ class LocationAgent(BaseAgent):
             "schedule_feedback": self.schedule_feedback,
             "budget_feedback": self.budget_feedback,
         }
-        query = self._parse_query(
-            query=self.location_prompt, custom_params=custom_params_location
-        ).strip()
+        query = self._parse_query(self.location_prompt, custom_params_location).strip()
 
         custom_params_retrieval = {"location_feedback": query}
         summarized_query = self._summarize_query(
-            query=self.retrieval_prompt, custom_params=custom_params_retrieval
+            self.retrieval_prompt, custom_params_retrieval
         ).strip()
 
         retrieved_docs = self._retrieve_documents(
@@ -82,7 +55,7 @@ class LocationAgent(BaseAgent):
         ).strip()  # Add original and summarized query
 
         self.location_feedback = self._parse_query(
-            query=self.final_location_prompt, custom_params={"final_query": final_query}
+            self.final_location_prompt, {"final_query": final_query}
         ).strip()
 
         print(

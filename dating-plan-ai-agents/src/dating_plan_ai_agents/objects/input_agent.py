@@ -27,16 +27,8 @@ class InputValidator(BaseAgent):
             "5. Total budget set for the date\n"
             "6. Food preferences (e.g Vegetarian, etc.)\n"
             "7. Activity preferences (e.g., relaxing, adventurous)\n"
-            "Inputs: {}"
+            "Inputs: {user_input}"
         )
-
-    @property
-    def revierwer_prompt(self):
-        return self.reviewer_prompt
-
-    @revierwer_prompt.setter
-    def revierwer_prompt(self, value):
-        self.reviewer_prompt = value
 
     def _get_additional_state(self, state: GraphState):
         # Collect the necessary inputs from the state
@@ -64,11 +56,9 @@ class InputValidator(BaseAgent):
         custom_params = {
             "user_input": user_input,
         }
-        self.input_feedback = self._parse_query(
-            state, query=self.reviewer_prompt, custom_params=custom_params
-        )
+        self.input_feedback = self._parse_query(self.reviewer_prompt, custom_params)
         print(
-            f"\nInput Feedback for iteration {state.get('total_iterations')}: {self.input_feedback}"
+            f"\nInput Feedback for iteration {state.get('total_iterations')-1}: {self.input_feedback}"
         )
         return {
             "input_feedback": self.input_feedback,  # Save the feedback here

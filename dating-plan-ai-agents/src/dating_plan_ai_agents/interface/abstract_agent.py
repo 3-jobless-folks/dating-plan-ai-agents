@@ -17,7 +17,9 @@ class AbstractAgent(ABC):
         self.tools = Tools()
         self.llm_caller = LLM()
         self.pinecone_manager = PineconeManager(
-            pc_api_key="PINECONE_KEY", openai_key="API_KEY", index_name="test1"
+            pc_api_key=os.getenv("PINECONE_KEY"),
+            openai_key=os.getenv("API_KEY"),
+            index_name="test1",
         )
         self.budget_feedback = "No specific budget yet"
         self.location_feedback = "No specific locations yet"

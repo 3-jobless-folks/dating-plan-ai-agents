@@ -41,6 +41,7 @@ class DatePlanRequest(BaseModel):
 @app.post("/plan")
 async def create_plan(request: DatePlanRequest):
     # Here you would process the multi-agent loop
+    print("Printed")
     start_time = request.start_time
     end_time = request.end_time
     indoor_outdoor = request.indoor_outdoor

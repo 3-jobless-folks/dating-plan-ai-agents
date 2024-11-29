@@ -25,13 +25,13 @@ class SchedulingAgent(BaseAgent):
             "input_feedback": self.input_feedback,
         }
         self.schedule_feedback = self._parse_query(
-            query=self.scheduling_prompt, custom_params=custom_params
+            self.scheduling_prompt, custom_params
         )
         print(
-            f"\nFinal Schedule Feedback for loop {state.get('total_iterations')}: {self.schedule_feedback}"
+            f"\nFinal Schedule Feedback for loop {state.get('total_iterations')+1}: {self.schedule_feedback}"
         )
         return {
             "original_query": state.get("original_query", ""),
             "schedule_feedback": self.schedule_feedback,  # Save the feedback here
-            "total_iterations": state.get("total_iterations", 0),
+            "total_iterations": state.get("total_iterations", 0) + 1,
         }

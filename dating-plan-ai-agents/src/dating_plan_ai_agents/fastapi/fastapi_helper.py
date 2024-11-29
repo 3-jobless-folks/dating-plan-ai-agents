@@ -24,9 +24,10 @@ def create_workflow(inputs: dict[str, Any]):
     result = None
     # Process the inputs and create a plan
     dating_review_workflow = StateGraph(GraphState)
+
     _create_workflow(dating_review_workflow)
     state = GraphState(
-        total_iterations=1,  # Initialize iteration counter
+        total_iterations=0,  # Initialize iteration counter
         budget=budget,  # Example user input
         start_time=start_time,
         end_time=end_time,
@@ -36,9 +37,13 @@ def create_workflow(inputs: dict[str, Any]):
         activity_preference=activity_preference,
         other_requirements=other_requirements,
     )
+    print("Workflow created...")
     # Execute the workflow
     result = dating_review_workflow.compile()
-    conversation = result.invoke(state, {"recursion_limit": 100})
+    conversation = result.invoke(
+        state, {"recursion_limit": 100}, stream_mode="values", debug=True
+    )
+    print(conversation)
 
     return conversation.get("final_schedule")
 
@@ -57,6 +62,9 @@ def _create_workflow(dating_review_workflow: StateGraph):
     dating_review_workflow.add_node("budget_reviewer", budget_reviewer.run)
     dating_review_workflow.add_node("evaluator", evaluator.run)
     dating_review_workflow.add_node("finalize_plan", finalize_plan.run)
+
+    # Set entry point
+    dating_review_workflow.set_entry_point("input_validator")
     # Add edges for transitions, including evaluator
     dating_review_workflow.add_edge("input_validator", "scheduling_agent")
     dating_review_workflow.add_edge("scheduling_agent", "location_selector")
@@ -64,7 +72,7 @@ def _create_workflow(dating_review_workflow: StateGraph):
 
     dating_review_workflow.add_conditional_edges(
         "budget_reviewer",
-        evaluator.evaluate_plan,
+        evaluator.run,
         {"scheduling_agent", "finalize_plan"},
     )
     # Add END condition for budget reviewer (final step before evaluation)

@@ -4,6 +4,7 @@ from dating_plan_ai_agents.objects.base_agent import BaseAgent
 
 class FinalPlan(BaseAgent):
     def __init__(self):
+        super().__init__()
         self.final_plan_prompt = (
             "You are a planner tasked with creating a final date plan based on the following information:\n"
             "1. Location Feedback: {location_feedback}\n"
@@ -38,9 +39,7 @@ class FinalPlan(BaseAgent):
             "schedule_feedback": self.schedule_feedback,
             "budget_feedback": self.budget_feedback,
         }
-        final_plan = self._parse_query(
-            query=self.final_plan_prompt, custom_params=custom_params
-        )
+        final_plan = self._parse_query(self.final_plan_prompt, custom_params)
         print("\n\n\n")
         print("=" * 50)
         print(final_plan)

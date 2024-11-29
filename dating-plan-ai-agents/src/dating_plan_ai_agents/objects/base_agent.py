@@ -7,7 +7,7 @@ class BaseAgent(AbstractAgent):
     """Base class for a general agent with memory and tools."""
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def _get_current_state(self, state: GraphState):
         self.location_feedback = state.get(
@@ -19,14 +19,14 @@ class BaseAgent(AbstractAgent):
             "schedule_feedback", "No schedule feedback yet"
         )
 
-    def _parse_query(self, query: str, **kwargs) -> str:
+    def _parse_query(self, query: str, kwargs) -> str:
         """Create first query"""
         agent_feedback = self.llm_caller.get_llm_response(query.format(**kwargs))
         return agent_feedback
 
-    def _summarize_query(self, query: str, **kwargs) -> str:
+    def _summarize_query(self, query: str, kwargs) -> str:
         """Summarize the user's query using the chosen LLM."""
-        summary_feedback = self._parse_query(query, **kwargs)
+        summary_feedback = self._parse_query(query, kwargs)
         return summary_feedback
 
     def _retrieve_documents(self, query: str, top_k: int) -> list[str]:
@@ -56,6 +56,9 @@ class BaseAgent(AbstractAgent):
             return self.tools.execute(tool_name, query_details)
         else:
             return self._generate_response(query_details)
+
+    def _generate_response(self, augmented_query: str) -> str:
+        pass
 
     def run(self, state) -> str:
         """Main workflow for handling user queries."""

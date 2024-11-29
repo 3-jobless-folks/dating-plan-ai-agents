@@ -19,20 +19,6 @@ class Evaluator(BaseAgent):
             "Only output 'Yes' if all conditions are met and the plan is feasible; otherwise, output 'No'."
         )
 
-    def _decide_action(self, response: str, state: GraphState) -> str:
-        if (
-            response.lower() == "yes"
-            or state.get("total_iterations", 0) > self.max_iterations
-        ):
-            print(f"Going to finalize plan for loop {state.get('total_iterations')}")
-            return "finalize_plan"  # All constraints satisfied; ready to finalize
-        else:
-            print(
-                f"Going back to scheduling agent for loop {state.get('total_iterations')}"
-            )
-            state["total_iterations"] = state.get("total_iterations", 0) + 1
-            return "scheduling_agent"  # Revisit input validation for adjustments
-
     def run(self, state):
         self._get_current_state(state)
         custom_params = {
@@ -41,10 +27,21 @@ class Evaluator(BaseAgent):
             "location_feedback": self.location_feedback,
             "input_feedback": self.input_feedback,
         }
-        evaluator_response = self._parse_query(
-            query=self.evaluator_prompt, custom_params=custom_params
-        )
+        evaluator_response = self._parse_query(self.evaluator_prompt, custom_params)
+        # Debugging step to verify the response
+        if evaluator_response.lower() not in ["yes", "no"]:
+            raise ValueError(f"Unexpected evaluator response: {evaluator_response}")
         print(
             f"\n\n\nEvaluator response for loop {state.get('total_iterations')}: {evaluator_response}"
         )
-        self._decide_action(evaluator_response, state)
+
+        if (
+            evaluator_response.lower() == "yes"
+            or state.get("total_iterations", 0) > self.max_iterations
+        ):
+            print(f"Going to finalize plan for loop {state.get('total_iterations')}")
+            return "finalize_plan"  # All constraints satisfied; ready to finalize
+        print(
+            f"Going back to scheduling agent for loop {state.get('total_iterations')}"
+        )
+        return "scheduling_agent"  # Revisit input validation for adjustments

@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 from pydantic import BaseModel
-import json
+import fastapi_helper
 
 
 app = FastAPI()
@@ -35,6 +35,7 @@ class DatePlanRequest(BaseModel):
     activity_preference: Optional[str] = (
         None  # Activity preference (e.g., relaxing, adventurous)  ##
     )
+    other_requirements: Optional[str] = None
 
 
 @app.post("/plan")
@@ -47,26 +48,19 @@ async def create_plan(request: DatePlanRequest):
     budget = request.budget
     food_preference = request.food_preference
     activity_preference = request.activity_preference
+    other_requirements = request.other_requirements
 
-    # Simulate multi-agent process
-    # For simplicity, assume we return a simple JSON string
-    final_plan = {
-        "activities": [
-            {
-                "activity": "Dinner at Italian Restaurant",
-                "location": "Romeo's Italian Bistro",
-                "time": "18:00 - 20:00",
-                "description": "A romantic dinner with fine Italian cuisine.",
-                "cost": 50,
-            },
-            {
-                "activity": "Walk in the Park",
-                "location": "Central Park",
-                "time": "20:15 - 21:00",
-                "description": "A peaceful stroll through the park, enjoying the night air.",
-                "cost": 0,
-            },
-        ]
-    }
+    result = fastapi_helper.create_workflow(
+        {
+            "start_time": start_time,
+            "end_time": end_time,
+            "indoor_outdoor": indoor_outdoor,
+            "country": country,
+            "budget": budget,
+            "food_preference": food_preference,
+            "activity_preference": activity_preference,
+            "other_requirements": other_requirements,
+        }
+    )
 
-    return {"result": final_plan}  # Return the result as formatted JSON
+    return {"result": result}  # Return the result as formatted JSON

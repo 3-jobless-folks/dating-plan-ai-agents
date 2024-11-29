@@ -45,6 +45,6 @@ class FinalPlan(BaseAgent):
         print("=" * 50)
         print(final_plan)
         return {
-            "final_plan": final_plan,
+            "final_schedule": final_plan,
             "total_iterations": state.get("total_iterations"),
         }

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 from pydantic import BaseModel
 import fastapi_helper
+import json
 
 
 app = FastAPI()
@@ -63,5 +64,11 @@ async def create_plan(request: DatePlanRequest):
             "other_requirements": other_requirements,
         }
     )
+    print(f"Data type: {type(result)} Final_schedule: {result}")
+    try:
+        result = json.loads(result.strip())
+        print(f"Json object:{type(result)}:\n {result}")
+    except json.JSONDecodeError:
+        result = {"error": "Invalid JSON response"}
 
     return {"result": result}  # Return the result as formatted JSON

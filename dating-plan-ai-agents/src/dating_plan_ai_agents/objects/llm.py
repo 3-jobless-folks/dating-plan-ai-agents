@@ -12,7 +12,7 @@ class LLM:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
         }
-        self.max_tokens = 10
+        self.max_tokens = 3000
 
     def get_llm_response(self, prompt):
         data = {
@@ -26,7 +26,7 @@ class LLM:
 
         llm_response = ""
         response = requests.post(
-            self.model_url, headers=self.headers, json=data, timeout=10
+            self.model_url, headers=self.headers, json=data, timeout=50
         )
         if response.status_code == 200:
             llm_response = response.json()["choices"][0]["message"]["content"]

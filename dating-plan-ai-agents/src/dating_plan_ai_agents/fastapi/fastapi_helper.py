@@ -43,9 +43,10 @@ def create_workflow(inputs: dict[str, Any]):
     conversation = result.invoke(
         state, {"recursion_limit": 100}, stream_mode="values", debug=True
     )
-    print(conversation)
-
-    return conversation.get("final_schedule")
+    final_schedule = (
+        conversation.get("final_schedule").replace("```", "").replace("json", "")
+    )
+    return final_schedule
 
 
 def _create_workflow(dating_review_workflow: StateGraph):

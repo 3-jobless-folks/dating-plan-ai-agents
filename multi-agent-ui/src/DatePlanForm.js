@@ -14,6 +14,7 @@ const DatePlanForm = () => {
 		budget: "",
 		food_preference: "",
 		activity_preference: "",
+		other_requirements: "",
 	});
 
 	const [errors, setErrors] = useState({}); // Validation errors
@@ -119,6 +120,19 @@ const DatePlanForm = () => {
 						onChange={handleChange}
 					/>
 					{errors.activity_preference && <div className="invalid-feedback">{errors.activity_preference}</div>}
+				</div>
+
+				{/* Other Requirements */}
+				<div className="mb-3">
+					<label className="form-label">Other Requirements</label>
+					<input
+						type="text"
+						className={`form-control ${errors.other_requirements ? "is-invalid" : ""}`}
+						name="other_requirements"
+						value={formData.other_requirements}
+						onChange={handleChange}
+					/>
+					{errors.other_requirements && <div className="invalid-feedback">{errors.other_requirements}</div>}
 				</div>
 
 				<button type="submit" className="btn btn-primary">

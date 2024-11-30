@@ -3,6 +3,7 @@ from dating_plan_ai_agents.objects.state import GraphState
 
 
 class Evaluator(BaseAgent):
+
     def __init__(self, max_iterations=5):
         super().__init__()
         self.max_iterations = max_iterations

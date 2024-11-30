@@ -26,6 +26,11 @@ const Navigation = () => {
 								Date Plan Result
 							</Link>
 						</li>
+						<li className="nav-item">
+							<Link className="nav-link" to="/convertemb">
+								Data Management
+							</Link>
+						</li>
 					</ul>
 				</div>
 			</div>

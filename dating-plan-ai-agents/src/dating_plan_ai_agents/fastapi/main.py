@@ -1,11 +1,14 @@
 # main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 from pydantic import BaseModel
+from dating_plan_ai_agents.objects.pinecone_manager import PineconeManager
+from dating_plan_ai_agents.mongodb.mongo import MongoDBHelper
 import fastapi_helper
 import json
-
+import load_dotenv
+import os
 
 app = FastAPI()
 
@@ -72,3 +75,46 @@ async def create_plan(request: DatePlanRequest):
         result = {"error": "Invalid JSON response"}
 
     return {"result": result}  # Return the result as formatted JSON
+
+
+@app.post("/ingest_mongodb_embeddings")
+async def ingest_mongodb_embeddings():
+    """
+    Endpoint to retrieve documents from MongoDB, generate embeddings,
+    and store them in Pinecone.
+    """
+    load_dotenv()
+    openai_key = os.getenv("API_KEY")
+    pc_key = os.getenv("PINECONE_KEY")
+    pinecone_manager = PineconeManager(
+        pc_api_key=pc_key,
+        openai_key=openai_key,
+        index_name="dating",
+        mongodb_uri="mongodb://localhost:27017",
+        mongodb_db="dating",
+        mongodb_collection="dating",
+    )
+    try:
+        # Trigger the ingestion of MongoDB data into Pinecone
+        pinecone_manager.ingest_mongodb(id_field="_id", text_field="content")
+
+        return {"message": "Data successfully ingested into Pinecone"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.post("/upload-csv/")
+async def upload_csv(file: UploadFile = File(...)):
+    try:
+        mongo_helper = MongoDBHelper()
+        # Read the content of the uploaded file and convert it to MongoDB
+        num_documents = mongo_helper.convert_csv_to_mongodb(file.file.read())
+
+        if num_documents > 0:
+            return {
+                "message": f"Successfully inserted {num_documents} records into MongoDB."
+            }
+        else:
+            return {"message": "No valid records found in the CSV."}
+    except Exception as e:
+        return {"message": f"Error occurred: {str(e)}"}

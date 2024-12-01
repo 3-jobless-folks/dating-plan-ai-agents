@@ -1,39 +1,54 @@
 import csv
 from pymongo import MongoClient
 from dating_plan_ai_agents.mongodb.review import Review
+import pandas as pd
+import io
 
 
 class MongoDBHelper:
-    def __init__(self, db_name, collection_name, mongo_uri="mongodb://localhost:27017"):
+
+    def __init__(
+        self, id_field, db_name, collection_name, mongo_uri="mongodb://localhost:27017"
+    ):
         self.client = MongoClient(mongo_uri)
         self.db = self.client[db_name]
         self.collection = self.db[collection_name]
+        # Create index for 'index_id' if it doesn't exist (ensure uniqueness)
+        self.collection.create_index(id_field, unique=True)
 
-    def convert_csv_to_mongodb(self, csv_file_path):
-        with open(csv_file_path, mode="r", encoding="utf-8") as file:
-            reader = csv.DictReader(file)
-            documents = []
-            for row in reader:
-                # Validate and create a CinemaReview object
+    def convert_csv_to_mongodb(self, contents, filename=None):
+        try:
+            df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+            # Convert DataFrame to a list of dictionaries
+            records = df.to_dict(orient="records")
+            # Validate and transform data using the Review class
+            validated_records = []
+            for row in records:
                 try:
+                    # Validate each row with the Review class
                     review = Review(
-                        index_id=int(row["index_id"]),
+                        index_id=row["index_id"],
                         caption=row["caption"],
                         name=row["name"],
-                        overall_rating=float(row["overall_rating"]),
+                        overall_rating=row["overall_rating"],
                         category=row["category"],
-                        opening_hours=row["opening_hours"],
+                        opening_hours=row.get("opening_hours", None),
                     )
-                    documents.append(
+                    validated_records.append(
                         review.model_dump()
-                    )  # Convert to dictionary for MongoDB
-                except ValueError as e:
-                    print(f"Skipping row due to error: {e}")
-                    continue
+                    )  # Convert the validated model to a dictionary
+                except (ValueError, TypeError, KeyError) as exp:
+                    # Log validation errors and skip invalid rows
+                    print(f"Validation error for row {row}: {exp}")
 
-            # Insert all valid documents into MongoDB
-            if documents:
-                self.collection.insert_many(documents)
-                print(
-                    f"Inserted {len(documents)} documents into the MongoDB collection."
+            for record in validated_records:
+                self.collection.update_one(
+                    {"index_id": record["index_id"]},  # Search by unique identifier
+                    {"$setOnInsert": record},  # Insert only if not already present
+                    upsert=True,  # Create a new document if not found
                 )
+            return {
+                "message": f"File '{filename}' uploaded and validated records inserted into MongoDB successfully."
+            }
+        except Exception as e:
+            return {"Error in convertin_to_mondb_func": str(e)}

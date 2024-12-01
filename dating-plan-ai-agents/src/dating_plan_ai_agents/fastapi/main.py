@@ -7,7 +7,7 @@ from dating_plan_ai_agents.objects.pinecone_manager import PineconeManager
 from dating_plan_ai_agents.mongodb.mongo import MongoDBHelper
 import fastapi_helper
 import json
-import load_dotenv
+from dotenv import load_dotenv
 import os
 
 app = FastAPI()
@@ -92,7 +92,7 @@ async def ingest_mongodb_embeddings():
         index_name="dating",
         mongodb_uri="mongodb://localhost:27017",
         mongodb_db="dating",
-        mongodb_collection="dating",
+        mongodb_collection="reviews",
     )
     try:
         # Trigger the ingestion of MongoDB data into Pinecone
@@ -105,16 +105,13 @@ async def ingest_mongodb_embeddings():
 
 @app.post("/upload-csv/")
 async def upload_csv(file: UploadFile = File(...)):
-    try:
-        mongo_helper = MongoDBHelper()
-        # Read the content of the uploaded file and convert it to MongoDB
-        num_documents = mongo_helper.convert_csv_to_mongodb(file.file.read())
 
-        if num_documents > 0:
-            return {
-                "message": f"Successfully inserted {num_documents} records into MongoDB."
-            }
-        else:
-            return {"message": "No valid records found in the CSV."}
-    except Exception as e:
-        return {"message": f"Error occurred: {str(e)}"}
+    mongo_helper = MongoDBHelper(
+        id_field="index_id", db_name="dating", collection_name="reviews"
+    )
+    # Read the content of the uploaded file and convert it to MongoDB
+    contents = await file.read()
+    file_name = file.filename
+    response = mongo_helper.convert_csv_to_mongodb(contents, file_name)
+
+    return response

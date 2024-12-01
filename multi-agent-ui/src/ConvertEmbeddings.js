@@ -72,19 +72,25 @@ const IngestEmbeddingsForm = () => {
 	};
 
 	return (
-		<div className="container mt-5">
-			<h2>Convert Embeddings</h2>
-			{/* Button to trigger ingestion */}
-			<button
-				onClick={handleIngestClick}
-				className="btn btn-primary"
-				disabled={loading} // Disable button while loading
-			>
-				{loading ? "Ingesting..." : "Ingest MongoDB Data"}
-			</button>
+		<div className="container mt-4">
+			<div className="container mt-4">
+				<h3>Convert Embeddings</h3>
+				{/* Button to trigger ingestion */}
+				<button onClick={handleIngestClick} className="btn btn-primary" disabled={loading}>
+					{loading ? (
+						<span>
+							<i className="spinner-border spinner-border-sm me-2"></i>Ingesting...
+						</span>
+					) : (
+						<span>
+							<i className="bi bi-database me-2"></i>Embed Data
+						</span>
+					)}
+				</button>
+			</div>
 
 			{/* CSV File Upload */}
-			<div className="mt-4">
+			<div className="container mt-4">
 				<h3>Convert CSV Data</h3>
 				<input type="file" accept=".csv" onChange={handleFileChange} className="form-control" />
 				<button
@@ -92,7 +98,15 @@ const IngestEmbeddingsForm = () => {
 					className="btn btn-secondary mt-3"
 					disabled={loading || !file} // Disable button if no file is selected or while loading
 				>
-					{loading ? "Converting..." : "Convert CSV Data"}
+					{loading ? (
+						<span>
+							<i className="spinner-border spinner-border-sm me-2"></i>Converting...
+						</span>
+					) : (
+						<span>
+							<i className="bi bi-file-earmark-arrow-up me-2"></i>Store CSV Data
+						</span>
+					)}
 				</button>
 			</div>
 

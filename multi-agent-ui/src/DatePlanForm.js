@@ -1,7 +1,6 @@
 /** @format */
 
-// src/DatePlanForm.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -19,6 +18,15 @@ const DatePlanForm = () => {
 
 	const [errors, setErrors] = useState({}); // Validation errors
 	const navigate = useNavigate();
+
+	// Check if the user is logged in when the component mounts
+	useEffect(() => {
+		const token = localStorage.getItem("jwt_token");
+		if (!token) {
+			// If no token, redirect to the login page
+			navigate("/login");
+		}
+	}, [navigate]);
 
 	// Handle form input changes
 	const handleChange = (e) => {

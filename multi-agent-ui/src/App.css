@@ -66,3 +66,11 @@ a.btn-primary:hover {
   text-align: left;
   display: block; /* Ensures the label takes the full width */
 }
+
+/* App.css */
+.navbar-nav .nav-item a {
+  color: #000 !important;
+}
+.navbar-nav .nav-item a:hover {
+  color: #007bff !important;
+}

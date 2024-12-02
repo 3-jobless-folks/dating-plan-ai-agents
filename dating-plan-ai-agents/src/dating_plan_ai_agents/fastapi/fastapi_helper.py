@@ -8,6 +8,10 @@ from dating_plan_ai_agents.objects.schedule_agent import SchedulingAgent
 from dating_plan_ai_agents.objects.final_agent import FinalPlan
 from langgraph.graph import StateGraph, END
 
+from passlib.context import CryptContext
+from dating_plan_ai_agents.mongodb.mongo import MongoDBHelper
+from jose import JWTError, jwt
+
 
 def create_workflow(inputs: dict[str, Any]):
     # Here you would process the multi-agent loop
@@ -79,3 +83,29 @@ def _create_workflow(dating_review_workflow: StateGraph):
     # Add END condition for budget reviewer (final step before evaluation)
     dating_review_workflow.add_edge("finalize_plan", END)
 
+
+def get_user_manager():
+    # MongoDB setup
+    user_helper = MongoDBHelper(
+        id_field="index_id", db_name="dating", collection_name="users"
+    )
+    users_collection = user_helper.collection
+
+    # Password hashing function
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    return users_collection, pwd_context
+
+
+def verify_password(pwd_context, plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_user_role_from_token(token: str, secret_key: str, algorithm: str) -> str:
+
+    # Decode the token using the SECRET_KEY and ALGORITHM
+    payload = jwt.decode(token, secret_key, algorithms=[algorithm])
+    # You should have 'role' in the token's payload, for example {'sub': 'user@example.com', 'role': 'admin'}
+    email = payload.get("sub")
+    role = payload.get("role")
+    print(f"User's role in get_user_role_form_token role: {role}")
+    return email, role

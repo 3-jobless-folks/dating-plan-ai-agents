@@ -1,15 +1,69 @@
 /** @format */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import jwtDecode from "jwt-decode"; // Optional, but you can still use it to decode the token locally
 
-// src/ConvertEmbeddings.js
 const IngestEmbeddingsForm = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [message, setMessage] = useState(null);
 	const [file, setFile] = useState(null);
+	const [users, setUsers] = useState([]); // To hold user data
+	const [schedules, setSchedules] = useState([]); // To hold schedule data
+	const [role, setRole] = useState(null); // To hold role data
+
+	// Fetch user role from the backend using the JWT token
+	const fetchUserRole = async () => {
+		const token = localStorage.getItem("jwt_token");
+		console.log("Retrieved Token:", token);
+		if (token) {
+			try {
+				// Assuming the backend has a `get_user_role` endpoint
+				const response = await axios.get("http://localhost:8000/get_user_role", {
+					headers: { Authorization: `Bearer ${token}` },
+				});
+				setRole(response.data.role); // Assuming the response contains the role
+			} catch (error) {
+				console.error("Error fetching user role:", error);
+				setError("Failed to fetch user role.");
+			}
+		}
+	};
+
+	// Fetch users from the backend
+	const fetchUsers = async () => {
+		try {
+			const response = await axios.get("http://localhost:8000/get_users");
+			setUsers(response.data);
+		} catch (error) {
+			console.error("Error fetching users:", error);
+			setError("Failed to fetch users.");
+		}
+	};
+
+	// Fetch schedules from the backend
+	const fetchSchedules = async () => {
+		try {
+			const response = await axios.get("http://localhost:8000/get_schedules");
+			setSchedules(response.data);
+		} catch (error) {
+			console.error("Error fetching schedules:", error);
+			setError("Failed to fetch schedules.");
+		}
+	};
+
+	// Use useEffect to load data when the component mounts
+	useEffect(() => {
+		fetchUsers();
+		fetchSchedules();
+		fetchUserRole(); // Get the user role when the component mounts
+	}, []);
+
+	// Check if the user is an admin before rendering the page
+	if (role !== "admin") {
+		return <div>You do not have permission to access this page.</div>;
+	}
 
 	// Handle button click to trigger the ingestion process for MongoDB data
 	const handleIngestClick = async () => {
@@ -20,11 +74,9 @@ const IngestEmbeddingsForm = () => {
 		try {
 			// Make a request to the FastAPI backend to ingest MongoDB data into Pinecone
 			const response = await axios.post("http://localhost:8000/ingest_mongodb_embeddings");
-
-			// Assuming the backend sends a success message
+			console.log("Backend response:", response.data);
 			setMessage(response.data.result);
 		} catch (error) {
-			// Handle error during the API request
 			console.error("Error ingesting data:", error);
 			setError("Failed to ingest data. Please try again later.");
 		} finally {
@@ -49,21 +101,15 @@ const IngestEmbeddingsForm = () => {
 		setMessage(null);
 
 		try {
-			// Create a form data object to send the CSV file
 			const formData = new FormData();
 			formData.append("file", file);
 
-			// Make a request to the FastAPI backend to convert the CSV data
 			const response = await axios.post("http://localhost:8000/upload-csv/", formData, {
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
+				headers: { "Content-Type": "multipart/form-data" },
 			});
 
-			// Assuming the backend sends a success message
 			setMessage(response.data.message);
 		} catch (error) {
-			// Handle error during the API request
 			console.error("Error uploading CSV:", error);
 			setError("Failed to convert CSV file. Please try again later.");
 		} finally {
@@ -73,13 +119,13 @@ const IngestEmbeddingsForm = () => {
 
 	return (
 		<div className="container mt-4">
-			<div className="container mt-4">
+			{/* Buttons for Ingesting and CSV Upload */}
+			<div className="mb-4">
 				<h3>Convert Embeddings</h3>
-				{/* Button to trigger ingestion */}
 				<button onClick={handleIngestClick} className="btn btn-primary" disabled={loading}>
 					{loading ? (
 						<span>
-							<i className="spinner-border spinner-border-sm me-2"></i>Ingesting...
+							<i className="spinner-border spinner-border-sm me-2"></i>Embedding...
 						</span>
 					) : (
 						<span>
@@ -89,18 +135,13 @@ const IngestEmbeddingsForm = () => {
 				</button>
 			</div>
 
-			{/* CSV File Upload */}
-			<div className="container mt-4">
+			<div className="mb-4">
 				<h3>Convert CSV Data</h3>
 				<input type="file" accept=".csv" onChange={handleFileChange} className="form-control" />
-				<button
-					onClick={handleCSVConversionClick}
-					className="btn btn-secondary mt-3"
-					disabled={loading || !file} // Disable button if no file is selected or while loading
-				>
+				<button onClick={handleCSVConversionClick} className="btn btn-secondary mt-3" disabled={loading || !file}>
 					{loading ? (
 						<span>
-							<i className="spinner-border spinner-border-sm me-2"></i>Converting...
+							<i className="spinner-border spinner-border-sm me-2"></i>Uploading...
 						</span>
 					) : (
 						<span>
@@ -108,6 +149,72 @@ const IngestEmbeddingsForm = () => {
 						</span>
 					)}
 				</button>
+			</div>
+
+			{/* Users Table */}
+			<h3 className="mt-4">Users</h3>
+			<div className="table-responsive">
+				<table className="table table-striped table-bordered">
+					<thead className="table-dark">
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+							<th>Email</th>
+							<th>Age</th>
+						</tr>
+					</thead>
+					<tbody>
+						{users.length === 0 ? (
+							<tr>
+								<td colSpan="4" className="text-center">
+									No users available.
+								</td>
+							</tr>
+						) : (
+							users.map((user) => (
+								<tr key={user.index_id}>
+									<td>{user.index_id}</td>
+									<td>{user.name}</td>
+									<td>{user.email}</td>
+									<td>{user.age}</td>
+								</tr>
+							))
+						)}
+					</tbody>
+				</table>
+			</div>
+
+			{/* Schedules Table */}
+			<h3 className="mt-4">Schedules</h3>
+			<div className="table-responsive">
+				<table className="table table-striped table-bordered">
+					<thead className="table-dark">
+						<tr>
+							<th>ID</th>
+							<th>User ID</th>
+							<th>Date</th>
+							<th>Activity</th>
+						</tr>
+					</thead>
+					<tbody>
+						{schedules.length === 0 ? (
+							<tr>
+								<td colSpan="4" className="text-center">
+									No schedules available.
+								</td>
+							</tr>
+						) : (
+							schedules.map((schedule) => (
+								<tr key={schedule.index_id}>
+									<td>{schedule.index_id}</td>
+									<td>{schedule.user_id}</td>
+									<td>{schedule.date}</td>
+									<td>{schedule.activity}</td>
+								</tr>
+							))
+						)}
+					</tbody>
+				</table>
 			</div>
 
 			{/* Show success or error message */}

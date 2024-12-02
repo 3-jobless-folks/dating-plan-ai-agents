@@ -47,7 +47,7 @@ class PineconeManager:
         embedding = res.data[0].embedding
         return embedding
 
-    def _ingest_data(self, data, id_field, text_field):
+    def _ingest_data(self, data, id_field, text_field, batch_size=100):
         """
         Helper function to ingest data (from CSV or MongoDB) into Pinecone.
         - data: DataFrame (for CSV) or Cursor (for MongoDB)
@@ -55,11 +55,16 @@ class PineconeManager:
         - text_field: The field name for the document text
         """
         vectors = []
+        count = 0
+        total_records = 0
+
         for doc in data:
+            # TODO: Add a check if id_field if alrdy exists in pinecone index_id
             # Ensure the document has both the id and text fields
-            doc_id = str(doc[id_field])  # Convert MongoDB ObjectId to string if needed
+            doc_id = str(doc[id_field])
             text = doc[text_field]
             embedding = self._generate_one_embedding(text)
+
             vectors.append(
                 {
                     "id": doc_id,
@@ -67,7 +72,21 @@ class PineconeManager:
                     "metadata": {"text": text},
                 }
             )
-        return vectors
+            count += 1
+
+            # If the batch size is reached, return the batch of vectors
+            if count >= batch_size:
+                total_records += len(vectors)
+                yield vectors  # Return the current batch
+                vectors = []  # Clear vectors for the next batch
+                count = 0  # Reset count for the next batch
+
+        # If there are remaining vectors that weren't added to a full batch
+        if vectors:
+            total_records += len(vectors)
+            yield vectors  # Yield the final batch of vectors
+
+        print(f"Processed a total of {total_records} records.")
 
     def ingest_csv(self, csv_file, id_column, text_column):
         # Load CSV data and ingest into Pinecone
@@ -80,16 +99,27 @@ class PineconeManager:
             f"Ingested {len(data)} records from CSV into Pinecone index '{self.index_name}'."
         )
 
-    def ingest_mongodb(self, id_field, text_field):
-        # Retrieve documents from MongoDB collection
+    def ingest_mongodb(self, id_field, text_field, batch_size=100):
         cursor = (
             self.collection.find()
         )  # Retrieve all documents from MongoDB collection
-        vectors = self._ingest_data(cursor, id_field=id_field, text_field=text_field)
-        self.index.upsert(vectors=vectors, namespace="default")
+
+        # Initialize variables for batching
+        total_records = 0
+
+        # Loop through each batch of vectors returned by _ingest_data
+        for batch_vectors in self._ingest_data(
+            cursor, id_field=id_field, text_field=text_field, batch_size=batch_size
+        ):
+            # Perform the upsert for this batch
+            self.index.upsert(vectors=batch_vectors, namespace="default")
+            print(f"Upserted {len(batch_vectors)} records into Pinecone.")
+            total_records += len(batch_vectors)
+
         print(
-            f"Ingested {len(vectors)} records from MongoDB collection '{self.mongodb_collection}' into Pinecone index '{self.index_name}'."
+            f"Ingested {total_records} records from MongoDB collection '{self.mongodb_collection}' into Pinecone index '{self.index_name}'."
         )
+        return total_records
 
     def retrieve_similar_documents(self, prompt, top_k=5) -> list[str]:
         # Encode the prompt and retrieve similar documents from Pinecone

@@ -11,9 +11,50 @@ class Review(BaseModel):
     category: Any
     opening_hours: Any
 
-    # # Validation for overall_rating (ensure it's between 1 and 5)
-    # @field_validator("overall_rating")
-    # def check_rating_range(cls, v):
-    #     if not (1 <= v <= 5):
-    #         raise ValueError("Overall rating must be between 1 and 5")
-    #     return v
+    @property
+    def index_id(self):
+        return self.index_id
+
+    @index_id.setter
+    def index_id(self, value):
+        self.index_id = value
+
+    @property
+    def caption(self):
+        return self.caption
+
+    @caption.setter
+    def caption(self, value):
+        self.caption = value
+
+    @property
+    def name(self):
+        return self.name
+
+    @name.setter
+    def name(self, value):
+        self.name = value
+
+    @property
+    def overall_rating(self):
+        return self.overall_rating
+
+    @overall_rating.setter
+    def overall_rating(self, value):
+        self.overall_rating = value
+
+    @property
+    def category(self):
+        return self.category
+
+    @category.setter
+    def category(self, value):
+        self.category = value
+
+    @property
+    def opening_hours(self):
+        return self.opening_hours
+
+    @opening_hours.setter
+    def opening_hours(self, value):
+        self.opening_hours = value

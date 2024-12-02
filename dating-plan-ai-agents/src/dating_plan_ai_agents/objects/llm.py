@@ -1,6 +1,9 @@
 import os
 import requests
 from dotenv import load_dotenv
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class LLM:
@@ -30,6 +33,7 @@ class LLM:
         )
         if response.status_code == 200:
             llm_response = response.json()["choices"][0]["message"]["content"]
+            logger.info(f"LLM response: {llm_response}\n\n\n")
         else:
             print("Error:", response.status_code, response.text)
 

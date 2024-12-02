@@ -1,6 +1,8 @@
 from dating_plan_ai_agents.objects.state import GraphState
 from dating_plan_ai_agents.objects.base_agent import BaseAgent
+import logging
 
+logger = logging.getLogger(__name__)
 
 class BudgetAgent(BaseAgent):
     def __init__(self):
@@ -26,10 +28,17 @@ class BudgetAgent(BaseAgent):
             "location_feedback": self.location_feedback,
             "input_feedback": self.input_feedback,
         }
-        budget_feedback = self._parse_query(self.budget_prompt, custom_params)
-        print(
-            f"\n\n\nBudget Feedback for loop {state.get('total_iterations')}: {budget_feedback}"
+        logger.info("=" * 50)
+        logger.info(
+            "=" * 20
+            + " Current iteration: "
+            + str(state.get("total_iterations"))
+            + " "
+            + "=" * 20
         )
+
+        budget_feedback = self._parse_query(self.budget_prompt, custom_params)
+        logger.info("=" * 50)
         # Add feedback to the state and return updated state
         return {
             "original_query": state.get("original_query", ""),

@@ -7,6 +7,7 @@ from dating_plan_ai_agents.objects.location_agent import LocationAgent
 from dating_plan_ai_agents.objects.schedule_agent import SchedulingAgent
 from dating_plan_ai_agents.objects.final_agent import FinalPlan
 from langgraph.graph import StateGraph, END
+from bson import ObjectId
 
 from passlib.context import CryptContext
 from dating_plan_ai_agents.mongodb.mongo import MongoDBHelper
@@ -50,7 +51,8 @@ def create_workflow(inputs: dict[str, Any]):
     final_schedule = (
         conversation.get("final_schedule").replace("```", "").replace("json", "")
     )
-    return final_schedule
+    conversation["final_schedule"] = final_schedule
+    return final_schedule, conversation
 
 
 def _create_workflow(dating_review_workflow: StateGraph):
@@ -109,3 +111,21 @@ def get_user_role_from_token(token: str, secret_key: str, algorithm: str) -> str
     role = payload.get("role")
     print(f"User's role in get_user_role_form_token role: {role}")
     return email, role
+
+
+def get_schedule_manager():
+    schedule_helper = MongoDBHelper(
+        id_field="index_id", db_name="dating", collection_name="schedules"
+    )
+    schedule_collection = schedule_helper.collection
+    return schedule_collection
+
+
+def convert_objectid(obj):
+    if isinstance(obj, ObjectId):
+        return str(obj)  # Convert ObjectId to string
+    if isinstance(obj, dict):
+        return {key: convert_objectid(value) for key, value in obj.items()}
+    if isinstance(obj, list):
+        return [convert_objectid(item) for item in obj]
+    return obj

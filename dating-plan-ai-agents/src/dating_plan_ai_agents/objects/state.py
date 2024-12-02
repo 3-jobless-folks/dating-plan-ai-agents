@@ -2,6 +2,7 @@ from typing import TypedDict, Optional
 
 
 class GraphState(TypedDict):
+    user_id: Optional[str] = None
     total_iterations: Optional[int] = None
     input_feedback: Optional[str] = None  # Feedback from InputValidator
     location_feedback: Optional[str] = None  # Feedback from LocationSelector

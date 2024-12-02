@@ -6,6 +6,7 @@ import Navigation from "./Navigation"; // Import Navigation
 import DatePlanForm from "./DatePlanForm";
 import DatePlanResult from "./DatePlanResult";
 import IngestEmbeddingsForm from "./ConvertEmbeddings";
+import UserSchedules from "./UserSchedules";
 import Home from "./Home";
 import Login from "./Login"; // Login component
 import Register from "./Register"; // Register component
@@ -42,6 +43,7 @@ const App = () => {
 					<Route path="/" element={<Home />} />
 					<Route path="/dateplan" element={<DatePlanForm />} />
 					<Route path="/result" element={<DatePlanResult />} />
+					<Route path="/userschedules" element={<UserSchedules />} />
 					<Route path="/convertemb" element={<IngestEmbeddingsForm />} />
 					<Route path="/login" element={<Login onLogin={handleLogin} />} />
 					<Route path="/register" element={<Register />} />

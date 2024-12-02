@@ -1,6 +1,9 @@
 # Scheduling agent
 from dating_plan_ai_agents.objects.state import GraphState
 from dating_plan_ai_agents.objects.base_agent import BaseAgent
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SchedulingAgent(BaseAgent):
@@ -24,12 +27,19 @@ class SchedulingAgent(BaseAgent):
             "budget_feedback": self.budget_feedback,
             "input_feedback": self.input_feedback,
         }
+        logger.info("=" * 50)
+        logger.info(
+            "=" * 20
+            + " Current iteration: "
+            + str(state.get("total_iterations"))
+            + " "
+            + "=" * 20
+        )
+
         self.schedule_feedback = self._parse_query(
             self.scheduling_prompt, custom_params
         )
-        print(
-            f"\nFinal Schedule Feedback for loop {state.get('total_iterations')+1}: {self.schedule_feedback}"
-        )
+        logger.info("=" * 50)
         return {
             "original_query": state.get("original_query", ""),
             "schedule_feedback": self.schedule_feedback,  # Save the feedback here

@@ -1,5 +1,7 @@
 from dating_plan_ai_agents.objects.base_agent import BaseAgent
-from dating_plan_ai_agents.objects.state import GraphState
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Evaluator(BaseAgent):
@@ -28,21 +30,31 @@ class Evaluator(BaseAgent):
             "location_feedback": self.location_feedback,
             "input_feedback": self.input_feedback,
         }
+        logger.info("=" * 50)
+        logger.info(
+            "=" * 20
+            + " Current iteration: "
+            + str(state.get("total_iterations"))
+            + " "
+            + "=" * 20
+        )
+
         evaluator_response = self._parse_query(self.evaluator_prompt, custom_params)
+        logger.info("=" * 50)
+
         # Debugging step to verify the response
         if evaluator_response.lower() not in ["yes", "no"]:
             raise ValueError(f"Unexpected evaluator response: {evaluator_response}")
-        print(
-            f"\n\n\nEvaluator response for loop {state.get('total_iterations')}: {evaluator_response}"
-        )
 
         if (
             evaluator_response.lower() == "yes"
             or state.get("total_iterations", 0) > self.max_iterations
         ):
-            print(f"Going to finalize plan for loop {state.get('total_iterations')}")
+            logger.info(
+                f"Going to finalize plan for loop {state.get('total_iterations')}"
+            )
             return "finalize_plan"  # All constraints satisfied; ready to finalize
-        print(
+        logger.info(
             f"Going back to scheduling agent for loop {state.get('total_iterations')}"
         )
         return "scheduling_agent"  # Revisit input validation for adjustments

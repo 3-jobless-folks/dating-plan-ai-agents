@@ -1,5 +1,8 @@
 from dating_plan_ai_agents.objects.base_agent import BaseAgent
 from dating_plan_ai_agents.objects.state import GraphState
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class InputValidator(BaseAgent):
@@ -12,7 +15,7 @@ class InputValidator(BaseAgent):
         self.country = None
         self.budget = None
         self.food_preference = None
-        self.activity_type = None
+        self.activity_preference = None
         self.other_requirements = None
         self.reviewer_prompt = (
             "Please validate the following user inputs.\n"
@@ -37,8 +40,8 @@ class InputValidator(BaseAgent):
         self.indoor_outdoor = state.get("indoor_outdoor", "")
         self.country = state.get("country", "")
         self.budget = state.get("budget", "")
-        self.food_preference = state.get("food_preferences", "")
-        self.activity_type = state.get("activity_type", "")
+        self.food_preference = state.get("food_preference", "")
+        self.activity_preference = state.get("activity_preference", "")
         self.other_requirements = state.get("other_requirements", "")
 
     def run(self, state: GraphState) -> GraphState:
@@ -50,16 +53,24 @@ class InputValidator(BaseAgent):
             f"Country of activities: {self.country}, "
             f"Budget: {self.budget}, "
             f"Food Preference: {self.food_preference}, "
-            f"Activity Type: {self.activity_type}, "
+            f"Activity Preference: {self.activity_preference}, "
             f"Other Requirements: {self.other_requirements}"
         )
         custom_params = {
             "user_input": user_input,
         }
-        self.input_feedback = self._parse_query(self.reviewer_prompt, custom_params)
-        print(
-            f"\nInput Feedback for iteration {state.get('total_iterations')-1}: {self.input_feedback}"
+        logger.info("=" * 50)
+        logger.info(
+            "=" * 20
+            + " Current iteration: "
+            + str(state.get("total_iterations"))
+            + " "
+            + "=" * 20
         )
+
+        self.input_feedback = self._parse_query(self.reviewer_prompt, custom_params)
+        logger.info("=" * 50)
+
         return {
             "input_feedback": self.input_feedback,  # Save the feedback here
             "total_iterations": state.get("total_iterations", 0),
@@ -69,6 +80,6 @@ class InputValidator(BaseAgent):
             "country": self.country,
             "budget": self.budget,
             "food_preference": self.food_preference,
-            "activity_type": self.activity_type,
+            "activity_preference": self.activity_preference,
             "other_requirements": self.other_requirements,
         }

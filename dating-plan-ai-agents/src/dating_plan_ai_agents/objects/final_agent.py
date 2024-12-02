@@ -1,6 +1,8 @@
 from dating_plan_ai_agents.objects.state import GraphState
 from dating_plan_ai_agents.objects.base_agent import BaseAgent
-import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class FinalPlan(BaseAgent):
@@ -41,10 +43,19 @@ class FinalPlan(BaseAgent):
             "schedule_feedback": self.schedule_feedback,
             "budget_feedback": self.budget_feedback,
         }
+        logger.info("=" * 50)
+        logger.info(
+            "=" * 20
+            + " Current iteration: "
+            + str(state.get("total_iterations"))
+            + " "
+            + "=" * 20
+        )
+
         final_plan = self._parse_query(self.final_plan_prompt, custom_params)
-        print(f"The data type of the LLM output is: {type(final_plan)}\n")
-        print(f"Final_plan: {final_plan}")
-        print("\n\n\n")
+        logger.info("=" * 50)
+        logger.info(f"The data type of the LLM output is: {type(final_plan)}\n")
+        logger.info(f"Final_plan: {final_plan}")
 
         return {
             "final_schedule": final_plan,

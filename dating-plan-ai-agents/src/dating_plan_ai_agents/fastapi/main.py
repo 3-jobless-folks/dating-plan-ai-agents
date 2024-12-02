@@ -10,11 +10,9 @@ import fastapi_helper
 import json
 from dotenv import load_dotenv
 import os
-import uvicorn
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timedelta
 from dating_plan_ai_agents.mongodb.user import User
 from dating_plan_ai_agents.mongodb.schedule import Schedule

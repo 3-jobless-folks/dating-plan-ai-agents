@@ -205,11 +205,31 @@ const IngestEmbeddingsForm = () => {
 							</tr>
 						) : (
 							schedules.map((schedule) => (
-								<tr key={schedule.index_id}>
-									<td>{schedule.index_id}</td>
+								<tr key={schedule.user_id}>
+									<td>{schedule._id}</td>
 									<td>{schedule.user_id}</td>
-									<td>{schedule.date}</td>
-									<td>{schedule.activity}</td>
+									<td>{schedule.created_at}</td>
+									<td>
+										{schedule.activities.map((activity, index) => (
+											<div key={index}>
+												<p>
+													<strong>Activities:</strong> {activity.activity}
+												</p>
+												<p>
+													<strong>Location:</strong> {activity.location}
+												</p>
+												<p>
+													<strong>Time:</strong> {activity.time}
+												</p>
+												<p>
+													<strong>Description:</strong> {activity.description}
+												</p>
+												<p>
+													<strong>Cost:</strong> {activity.cost}
+												</p>
+											</div>
+										))}
+									</td>
 								</tr>
 							))
 						)}

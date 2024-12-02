@@ -46,6 +46,11 @@ const Navigation = ({ isLoggedIn, handleLogout }) => {
 									</Link>
 								</li>
 								<li className="nav-item">
+									<Link className="nav-link" to="/userschedules">
+										My Schedules
+									</Link>
+								</li>
+								<li className="nav-item">
 									<Link className="nav-link" to="/convertemb">
 										Data Management
 									</Link>

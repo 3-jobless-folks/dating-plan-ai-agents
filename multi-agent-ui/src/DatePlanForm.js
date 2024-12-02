@@ -59,16 +59,28 @@ const DatePlanForm = () => {
 		}
 
 		try {
-			// Send request to FastAPI
-			const response = await axios.post("http://localhost:8000/plan", formData);
+			// Get the token from localStorage
+			const token = localStorage.getItem("jwt_token");
+			if (!token) {
+				throw new Error("Token is missing, please log in.");
+			}
+
+			// Send request to FastAPI with Authorization header
+			const response = await axios.post("http://localhost:8000/plan", formData, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
 			console.log("Backend response:", response.data);
 
 			// Navigate to the result page with response data
 			navigate("/result", { state: { result: response.data.result } });
 		} catch (error) {
 			console.error("Error sending data to backend", error);
+			alert(error.response?.data?.detail || "Something went wrong!");
 		}
 	};
+	
 
 	return (
 		<div className="container mt-5">

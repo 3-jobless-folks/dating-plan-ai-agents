@@ -3,42 +3,24 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const Navigation = () => {
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [isLoading, setIsLoading] = useState(true); // Add isLoading state
-	const navigate = useNavigate(); // To navigate after logout
-
-	// Check login status when the component mounts and also if localStorage changes
-	useEffect(() => {
-		const token = localStorage.getItem("jwt_token");
-		if (token) {
-			setIsLoggedIn(true); // User is logged in
-		}
-		setIsLoading(false); // Set loading to false after checking
-
-		// Listen for changes in localStorage (e.g., after login/logout)
-		const handleStorageChange = () => {
-			const token = localStorage.getItem("jwt_token");
-			setIsLoggedIn(!!token); // Update login status based on token existence
-		};
-
-		window.addEventListener("storage", handleStorageChange);
-		return () => {
-			window.removeEventListener("storage", handleStorageChange); // Clean up event listener
-		};
-	}, []);
+const Navigation = ({ isLoggedIn, handleLogout }) => {
+	const [isLoading, setIsLoading] = useState(true);
+	const navigate = useNavigate();
 
 	// Show loading spinner or message while the login status is being determined
-	if (isLoading) {
-		return <div>Loading...</div>; // Optionally render a loading indicator
-	}
+	useEffect(() => {
+		setIsLoading(false);
+	}, []);
 
 	// Handle Logout
-	const handleLogout = () => {
-		localStorage.removeItem("jwt_token"); // Remove the token on logout
-		setIsLoggedIn(false); // Update the UI to reflect logout
+	const handleLogoutClick = () => {
+		handleLogout(); // Call logout handler passed from App.js
 		navigate("/login"); // Redirect to login page after logout
 	};
+
+	if (isLoading) {
+		return <div>Loading...</div>;
+	}
 
 	return (
 		<nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -69,14 +51,9 @@ const Navigation = () => {
 									</Link>
 								</li>
 								<li className="nav-item">
-									<button className="nav-link btn btn-link" onClick={handleLogout}>
+									<button className="nav-link btn btn-link" onClick={handleLogoutClick}>
 										Logout
 									</button>
-								</li>
-								<li className="nav-item">
-									<Link className="nav-link" to="/register">
-										Register
-									</Link>
 								</li>
 							</>
 						) : (
@@ -84,6 +61,11 @@ const Navigation = () => {
 								<li className="nav-item">
 									<Link className="nav-link" to="/login">
 										Login
+									</Link>
+								</li>
+								<li className="nav-item">
+									<Link className="nav-link" to="/register">
+										Register
 									</Link>
 								</li>
 							</>

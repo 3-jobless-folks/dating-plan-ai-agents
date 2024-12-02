@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const Login = ({ onLogin }) => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const navigate = useNavigate();
@@ -26,8 +26,8 @@ const Login = () => {
 
 			if (response.ok) {
 				const data = await response.json();
-				localStorage.setItem("jwt_token", data.token); // Store the JWT token
-				navigate("/"); // Redirect to home after login
+				onLogin(data.token); // Pass the token to parent component
+				navigate("/dateplan"); // Redirect to the date plan page
 			} else {
 				const errorData = await response.json();
 				alert(errorData.detail || "Login failed");

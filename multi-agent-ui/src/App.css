@@ -74,3 +74,36 @@ a.btn-primary:hover {
 .navbar-nav .nav-item a:hover {
   color: #007bff !important;
 }
+
+
+/* App.css */
+.home-container {
+  background-image: url('https://your-image-url.com'); /* Optional: Add a background image */
+  background-size: cover;
+  background-position: center;
+  padding-left: 30px;  /* Optional: Add left padding */
+}
+
+.home-container h1 {
+  font-family: 'Roboto', sans-serif;
+}
+
+.home-container .btn-primary {
+  border-radius: 50px; /* Round corners for the button */
+  font-size: 1.2rem;
+  margin-top: 10px;
+}
+
+.feature-list {
+  margin-top: 20px;
+  font-size: 1.1rem;
+}
+
+.feature-list ul {
+  padding-left: 20px;
+}
+
+.feature-list li {
+  margin-bottom: 10px;
+}
+

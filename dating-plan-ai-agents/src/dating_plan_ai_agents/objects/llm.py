@@ -26,7 +26,7 @@ class LLM:
 
         llm_response = ""
         response = requests.post(
-            self.model_url, headers=self.headers, json=data, timeout=10
+            self.model_url, headers=self.headers, json=data, timeout=50
         )
         if response.status_code == 200:
             llm_response = response.json()["choices"][0]["message"]["content"]

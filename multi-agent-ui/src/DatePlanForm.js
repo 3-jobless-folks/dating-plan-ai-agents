@@ -1,7 +1,6 @@
 /** @format */
 
-// src/DatePlanForm.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -14,10 +13,20 @@ const DatePlanForm = () => {
 		budget: "",
 		food_preference: "",
 		activity_preference: "",
+		other_requirements: "",
 	});
 
 	const [errors, setErrors] = useState({}); // Validation errors
 	const navigate = useNavigate();
+
+	// Check if the user is logged in when the component mounts
+	useEffect(() => {
+		const token = localStorage.getItem("jwt_token");
+		if (!token) {
+			// If no token, redirect to the login page
+			navigate("/login");
+		}
+	}, [navigate]);
 
 	// Handle form input changes
 	const handleChange = (e) => {
@@ -119,6 +128,19 @@ const DatePlanForm = () => {
 						onChange={handleChange}
 					/>
 					{errors.activity_preference && <div className="invalid-feedback">{errors.activity_preference}</div>}
+				</div>
+
+				{/* Other Requirements */}
+				<div className="mb-3">
+					<label className="form-label">Other Requirements</label>
+					<input
+						type="text"
+						className={`form-control ${errors.other_requirements ? "is-invalid" : ""}`}
+						name="other_requirements"
+						value={formData.other_requirements}
+						onChange={handleChange}
+					/>
+					{errors.other_requirements && <div className="invalid-feedback">{errors.other_requirements}</div>}
 				</div>
 
 				<button type="submit" className="btn btn-primary">

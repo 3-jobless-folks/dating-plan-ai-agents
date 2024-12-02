@@ -26,9 +26,7 @@ class BudgetAgent(BaseAgent):
             "location_feedback": self.location_feedback,
             "input_feedback": self.input_feedback,
         }
-        budget_feedback = self._parse_query(
-            query=self.budget_prompt, custom_params=custom_params
-        )
+        budget_feedback = self._parse_query(self.budget_prompt, custom_params)
         print(
             f"\n\n\nBudget Feedback for loop {state.get('total_iterations')}: {budget_feedback}"
         )

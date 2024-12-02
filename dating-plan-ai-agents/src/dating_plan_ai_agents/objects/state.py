@@ -19,3 +19,4 @@ class GraphState(TypedDict):
     activity_preference: Optional[str] = (
         None  # Activity preference (e.g., relaxing, adventurous)
     )
+    other_requirements: Optional[str] = None

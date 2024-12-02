@@ -15,7 +15,7 @@ class InputValidator(BaseAgent):
         self.country = None
         self.budget = None
         self.food_preference = None
-        self.activity_type = None
+        self.activity_preference = None
         self.other_requirements = None
         self.reviewer_prompt = (
             "Please validate the following user inputs.\n"
@@ -41,7 +41,7 @@ class InputValidator(BaseAgent):
         self.country = state.get("country", "")
         self.budget = state.get("budget", "")
         self.food_preference = state.get("food_preference", "")
-        self.activity_type = state.get("activity_type", "")
+        self.activity_preference = state.get("activity_preference", "")
         self.other_requirements = state.get("other_requirements", "")
 
     def run(self, state: GraphState) -> GraphState:
@@ -53,7 +53,7 @@ class InputValidator(BaseAgent):
             f"Country of activities: {self.country}, "
             f"Budget: {self.budget}, "
             f"Food Preference: {self.food_preference}, "
-            f"Activity Type: {self.activity_type}, "
+            f"Activity Preference: {self.activity_preference}, "
             f"Other Requirements: {self.other_requirements}"
         )
         custom_params = {
@@ -80,6 +80,6 @@ class InputValidator(BaseAgent):
             "country": self.country,
             "budget": self.budget,
             "food_preference": self.food_preference,
-            "activity_type": self.activity_type,
+            "activity_preference": self.activity_preference,
             "other_requirements": self.other_requirements,
         }

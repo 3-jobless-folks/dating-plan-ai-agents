@@ -52,10 +52,11 @@ class LocationAgent(BaseAgent):
         summarized_query = self._summarize_query(
             self.retrieval_prompt, custom_params_retrieval
         ).strip()
-
+        logger.info(f"Summarized_query:\n {summarized_query}\n\n\n")
         retrieved_docs = self._retrieve_documents(
             query=summarized_query, top_k=10
         )  # Retrieve docs
+        logger.info(f"Documents retrieved:\n {retrieved_docs}\n\n\n")
 
         augmented_query = self._augment_query(
             query=summarized_query, documents=retrieved_docs
@@ -64,7 +65,7 @@ class LocationAgent(BaseAgent):
         final_query = self._generate_final_query(
             original_query=query, augmented_query=augmented_query
         ).strip()  # Add original and summarized query
-
+        logger.info(f"final_query: {final_query}")
         self.location_feedback = self._parse_query(
             self.final_location_prompt, {"final_query": final_query}
         ).strip()

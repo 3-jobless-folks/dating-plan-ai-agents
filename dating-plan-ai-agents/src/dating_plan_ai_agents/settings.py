@@ -46,6 +46,3 @@ CONFIG_LOADER_ARGS = {
 # from kedro.io import DataCatalog
 # DATA_CATALOG_CLASS = DataCatalog
 
-
-# Set logging config path
-os.environ["KEDRO_LOGGING_CONFIG"] = "conf/base/logging.yml"

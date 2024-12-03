@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 
 function UserSchedules({ userId }) {
 	const [schedules, setSchedules] = useState([]);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [schedulesPerPage] = useState(5); // Number of schedules to display per page
@@ -28,7 +28,8 @@ function UserSchedules({ userId }) {
 				});
 
 				if (!response.ok) {
-					throw new Error(`Error fetching schedules: ${response.statusText}`);
+					const errorData = await response.json();
+					throw new Error(` ${errorData.detail || response.statusText}`);
 				}
 
 				const data = await response.json();
@@ -57,7 +58,7 @@ function UserSchedules({ userId }) {
 	const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 	return (
-		<div className="container mt-5">
+		<div className="container mt-4">
 			<h3 className="mb-4">User Schedules</h3>
 			<div className="table-responsive">
 				<table className="table table-bordered table-hover table-striped">

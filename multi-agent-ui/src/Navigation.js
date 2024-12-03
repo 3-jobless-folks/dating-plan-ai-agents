@@ -56,7 +56,12 @@ const Navigation = ({ isLoggedIn, handleLogout }) => {
 									</Link>
 								</li>
 								<li className="nav-item">
-									<button className="nav-link btn btn-link" onClick={handleLogoutClick}>
+									<Link className="nav-link" to="/about">
+										About Us
+									</Link>
+								</li>
+								<li className="nav-item">
+									<button className="nav-link" onClick={handleLogoutClick}>
 										Logout
 									</button>
 								</li>

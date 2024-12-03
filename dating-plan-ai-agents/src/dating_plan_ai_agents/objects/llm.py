@@ -15,7 +15,7 @@ class LLM:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
         }
-        self.max_tokens = 3000
+        self.max_tokens = 10
 
     def get_llm_response(self, prompt):
         data = {

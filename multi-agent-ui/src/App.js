@@ -10,6 +10,18 @@ import UserSchedules from "./UserSchedules";
 import Home from "./Home";
 import Login from "./Login"; // Login component
 import Register from "./Register"; // Register component
+import AboutPage from "./AboutPage";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
+import { SubmitProvider } from "./SubmitContext";
+import { PopupProvider } from "./PopupContext";
+
+// Configure NProgress
+NProgress.configure({
+	showSpinner: true, // Disable spinner
+	speed: 500, // Increase or decrease the speed
+	easing: "ease-in-out", // Change easing effect
+});
 
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -29,27 +41,33 @@ const App = () => {
 
 	const handleLogout = () => {
 		localStorage.removeItem("jwt_token"); // Remove token from localStorage
+		localStorage.removeItem("datePlan");
 		setIsLoggedIn(false); // Update login state
 	};
 
 	return (
-		<Router>
-			<div className="App">
-				{/* Pass login state and logout handler to Navigation */}
-				<Navigation isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+		<SubmitProvider>
+			<PopupProvider>
+				<Router>
+					<div className="App" style={{ fontFamily: "'Poppins', sans-serif" }}>
+						{/* Pass login state and logout handler to Navigation */}
+						<Navigation isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
 
-				{/* Page Routes */}
-				<Routes>
-					<Route path="/" element={<Home />} />
-					<Route path="/dateplan" element={<DatePlanForm />} />
-					<Route path="/result" element={<DatePlanResult />} />
-					<Route path="/userschedules" element={<UserSchedules />} />
-					<Route path="/convertemb" element={<IngestEmbeddingsForm />} />
-					<Route path="/login" element={<Login onLogin={handleLogin} />} />
-					<Route path="/register" element={<Register />} />
-				</Routes>
-			</div>
-		</Router>
+						{/* Page Routes */}
+						<Routes>
+							<Route path="/" element={<Home />} />
+							<Route path="/dateplan" element={<DatePlanForm />} />
+							<Route path="/result" element={<DatePlanResult />} />
+							<Route path="/userschedules" element={<UserSchedules />} />
+							<Route path="/convertemb" element={<IngestEmbeddingsForm />} />
+							<Route path="/login" element={<Login onLogin={handleLogin} />} />
+							<Route path="/register" element={<Register />} />
+							<Route path="/about" element={<AboutPage />} />
+						</Routes>
+					</div>
+				</Router>
+			</PopupProvider>
+		</SubmitProvider>
 	);
 };
 

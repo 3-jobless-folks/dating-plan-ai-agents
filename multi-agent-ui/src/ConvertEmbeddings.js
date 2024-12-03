@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import jwtDecode from "jwt-decode"; // Optional, but you can still use it to decode the token locally
 
 const IngestEmbeddingsForm = () => {
 	const [loading, setLoading] = useState(false);

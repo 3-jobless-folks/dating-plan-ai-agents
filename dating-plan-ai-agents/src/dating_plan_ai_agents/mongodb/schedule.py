@@ -1,10 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from dating_plan_ai_agents.mongodb.activity import Activity
 from datetime import datetime
+from uuid import uuid4
 
 
 class Schedule(BaseModel):
+    index_id: str = Field(default_factory=lambda: str(uuid4()))
     user_id: Optional[str] = None
     total_iterations: Optional[int] = None
     input_feedback: Optional[str] = None  # Feedback from InputValidator

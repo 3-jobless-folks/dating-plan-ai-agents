@@ -18,6 +18,7 @@ from dating_plan_ai_agents.mongodb.user import User
 from dating_plan_ai_agents.mongodb.schedule import Schedule
 from dating_plan_ai_agents.mongodb.user_role import UserRole
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import BackgroundTasks
 
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -104,7 +105,7 @@ class DatePlanRequest(BaseModel):
 
 
 # Get the current user's role from the token
-def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
@@ -129,13 +130,16 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 # Check if the current user has admin privileges
-def is_admin(current_user: dict = Depends(get_current_user)):
+async def is_admin(current_user: dict = Depends(get_current_user)):
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin privileges required")
 
 
 @app.post("/plan")
-async def create_plan(request: DatePlanRequest, user: dict = Depends(get_current_user)):
+async def create_plan(
+    request: DatePlanRequest,
+    user: dict = Depends(get_current_user),
+):
     # Here you would process the multi-agent loop
     # Extract user info
     user_id = user.get("user_id")
@@ -175,7 +179,6 @@ async def create_plan(request: DatePlanRequest, user: dict = Depends(get_current
     date_plan = Schedule.model_validate(final_state)
     schedule_manager = fastapi_helper.get_schedule_manager()
     schedule_manager.insert_one(date_plan.model_dump())
-
     return {"result": result}  # Return the result as formatted JSON
 
 
@@ -374,10 +377,11 @@ async def get_user_schedules(user_id: str = Depends(get_current_user)):
     schedule_manager = fastapi_helper.get_schedule_manager()
     user_schedules_cursor = schedule_manager.find({"user_id": user_id})
     user_schedules = await user_schedules_cursor.to_list(length=100)
-
+    print(user_schedules)
     if not user_schedules:
         raise HTTPException(
-            status_code=404, detail="Schedules not found for the given user"
+            status_code=404,
+            detail="No schedules found for the current user.\n Create more schedules now!",
         )
     print(f"User schedules found: {user_schedules}")
     return fastapi_helper.convert_objectid(user_schedules)

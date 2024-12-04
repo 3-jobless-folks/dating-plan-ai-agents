@@ -108,19 +108,19 @@ a.btn-primary:hover {
 
 /* Customize NProgress */
 #nprogress .bar {
-  background: #29d; /* Adjust the color as desired */
+  background: rgb(35, 36, 36); /* Adjust the color as desired */
   height: 12px; /* Adjust thickness here */
 }
 
 #nprogress .peg {
-  box-shadow: 0 0 10px #29d, 0 0 5px #29d; /* Optional glow effect */
+  box-shadow: 0 0 10px rgb(63, 64, 64), 0 0 5px #29d; /* Optional glow effect */
   height: 10px; /* Match the thickness of the bar */
 }
 
 
 #nprogress .spinner-icon {
-  border-top-color: #007bff;
-  border-left-color: #007bff;
+  border-top-color: #d905f1;
+  border-left-color: #aa00ff;
 }
 
 .image-fit {

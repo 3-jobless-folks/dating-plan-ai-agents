@@ -91,25 +91,31 @@ const DatePlanForm = () => {
 	return (
 		<div className="container mt-5">
 			<h2>Create Your Date Plan</h2>
-			<form onSubmit={handleSubmit}>
+			<form onSubmit={handleSubmit} className="mx-auto" style={{ maxWidth: "600px" }}>
 				{/* Start Time */}
-				<div className="mb-3">
-					<label className="form-label">Start Time</label>
+				<label className="form-label">Start Time</label>
+				<div className="mb-3 input-group">
+					<span className="input-group-text">
+						<i className="bi bi-clock"></i>
+					</span>
 					<input
 						type="text"
 						className={`form-control ${errors.start_time ? "is-invalid" : ""}`}
 						name="start_time"
 						value={formData.start_time}
 						onChange={handleChange}
-						disabled={isSubmitting} // Disable input when loading
-						style={{ backgroundColor: isSubmitting ? "#e9ecef" : "" }} // Grey out input when loading
+						disabled={isSubmitting}
+						style={{ backgroundColor: isSubmitting ? "#e9ecef" : "" }}
 					/>
 					{errors.start_time && <div className="invalid-feedback">{errors.start_time}</div>}
 				</div>
 
 				{/* End Time */}
-				<div className="mb-3">
-					<label className="form-label">End Time</label>
+				<label className="form-label">End Time</label>
+				<div className="mb-3 input-group">
+					<span className="input-group-text">
+						<i className="bi bi-clock"></i>
+					</span>
 					<input
 						type="text"
 						className={`form-control ${errors.end_time ? "is-invalid" : ""}`}
@@ -123,8 +129,11 @@ const DatePlanForm = () => {
 				</div>
 
 				{/* Indoor/Outdoor */}
-				<div className="mb-3">
-					<label className="form-label">Indoor/Outdoor</label>
+				<label className="form-label">Indoor or Outdoor</label>
+				<div className="mb-3 input-group">
+					<span className="input-group-text">
+						<i className="bi bi-house-door"></i>
+					</span>
 					<input
 						type="text"
 						className={`form-control ${errors.indoor_outdoor ? "is-invalid" : ""}`}
@@ -138,8 +147,11 @@ const DatePlanForm = () => {
 				</div>
 
 				{/* Country */}
-				<div className="mb-3">
-					<label className="form-label">Country</label>
+				<label className="form-label">Country</label>
+				<div className="mb-3 input-group">
+					<span className="input-group-text">
+						<i className="bi bi-geo-alt"></i>
+					</span>
 					<input
 						type="text"
 						className={`form-control ${errors.country ? "is-invalid" : ""}`}
@@ -153,8 +165,11 @@ const DatePlanForm = () => {
 				</div>
 
 				{/* Budget */}
-				<div className="mb-3">
-					<label className="form-label">Budget</label>
+				<label className="form-label">Budget</label>
+				<div className="mb-3 input-group">
+					<span className="input-group-text">
+						<i className="bi bi-wallet"></i>
+					</span>
 					<input
 						type="text"
 						className={`form-control ${errors.budget ? "is-invalid" : ""}`}
@@ -168,8 +183,11 @@ const DatePlanForm = () => {
 				</div>
 
 				{/* Food Preference */}
-				<div className="mb-3">
-					<label className="form-label">Food Preference</label>
+				<label className="form-label">Food Preference</label>
+				<div className="mb-3 input-group">
+					<span className="input-group-text">
+						<i className="bi bi-palette"></i>
+					</span>
 					<input
 						type="text"
 						className={`form-control ${errors.food_preference ? "is-invalid" : ""}`}
@@ -183,8 +201,11 @@ const DatePlanForm = () => {
 				</div>
 
 				{/* Activity Preference */}
-				<div className="mb-3">
-					<label className="form-label">Activity Preference</label>
+				<label className="form-label">Activity Preference</label>
+				<div className="mb-3 input-group">
+					<span className="input-group-text">
+						<i className="bi bi-activity"></i>
+					</span>
 					<input
 						type="text"
 						className={`form-control ${errors.activity_preference ? "is-invalid" : ""}`}
@@ -200,14 +221,16 @@ const DatePlanForm = () => {
 				{/* Other Requirements */}
 				<div className="mb-3">
 					<label className="form-label">Other Requirements</label>
-					<input
-						type="text"
+					<textarea
 						className={`form-control ${errors.other_requirements ? "is-invalid" : ""}`}
 						name="other_requirements"
 						value={formData.other_requirements}
 						onChange={handleChange}
 						disabled={isSubmitting}
-						style={{ backgroundColor: isSubmitting ? "#e9ecef" : "" }}
+						style={{
+							backgroundColor: isSubmitting ? "#e9ecef" : "",
+							height: "150px",
+						}}
 					/>
 					{errors.other_requirements && <div className="invalid-feedback">{errors.other_requirements}</div>}
 				</div>

@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // Remove Switch and use Routes in v6
 import Navigation from "./Navigation"; // Import Navigation
 import DatePlanForm from "./DatePlanForm";
 import DatePlanResult from "./DatePlanResult";
@@ -12,9 +12,11 @@ import Login from "./Login"; // Login component
 import Register from "./Register"; // Register component
 import AboutPage from "./AboutPage";
 import NProgress from "nprogress";
+import DataManagement from "./DataManagement";
 import "nprogress/nprogress.css";
 import { SubmitProvider } from "./SubmitContext";
 import { PopupProvider } from "./PopupContext";
+import GitHubIssuesPage from "./GitHubIssuesPage";
 
 // Configure NProgress
 NProgress.configure({
@@ -59,10 +61,12 @@ const App = () => {
 							<Route path="/dateplan" element={<DatePlanForm />} />
 							<Route path="/result" element={<DatePlanResult />} />
 							<Route path="/userschedules" element={<UserSchedules />} />
+							<Route path="/datamanagement" element={<DataManagement />} />
 							<Route path="/convertemb" element={<IngestEmbeddingsForm />} />
 							<Route path="/login" element={<Login onLogin={handleLogin} />} />
 							<Route path="/register" element={<Register />} />
 							<Route path="/about" element={<AboutPage />} />
+							<Route path="/github-issues" element={<GitHubIssuesPage />} /> {/* Corrected the route */}
 						</Routes>
 					</div>
 				</Router>
@@ -72,3 +76,4 @@ const App = () => {
 };
 
 export default App;
+

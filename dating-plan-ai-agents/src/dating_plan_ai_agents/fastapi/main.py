@@ -1,6 +1,5 @@
 # main.py
 from fastapi import FastAPI, UploadFile, File, Request, APIRouter, Query
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 from pydantic import BaseModel
@@ -16,21 +15,32 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from dating_plan_ai_agents.mongodb.user import User
 from dating_plan_ai_agents.mongodb.schedule import Schedule
-from dating_plan_ai_agents.mongodb.user_role import UserRole
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import BackgroundTasks
+import boto3
 
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
-# Secret key for encoding and decoding JWT
+# # Secret key for encoding and decoding JWT
 SECRET_KEY = "a_random_secret_key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+# def get_secret(secret_name):
+#     region_name = os.getenv("AWS_REGION", "us-east-1")
+#     client = boto3.client("secretsmanager", region_name=region_name)
+#     response = client.get_secret_value(SecretId=secret_name)
+#     return json.loads(response["SecretString"])
+
+
+# secret = get_secret("my-app/config")
+# SECRET_KEY = secret["SECRET_KEY"]
+# ALGORITHM = secret["ALGORITHM"]
+# ACCESS_TOKEN_EXPIRE_MINUTES = int(secret["ACCESS_TOKEN_EXPIRE_MINUTES"])
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
 router = APIRouter()
 app.include_router(router)
@@ -75,22 +85,6 @@ app.add_middleware(
 )
 
 
-# # Middleware to restrict upload size
-# @app.middleware("http")
-# async def limit_upload_size(request: Request, call_next):
-#     max_upload_size = 10 * 1024 * 1024 * 1024  # 1 GB
-#     content_length = request.headers.get("content-length")
-
-#     if content_length and int(content_length) > max_upload_size:
-#         return JSONResponse(
-#             content={"detail": "Request payload too large. Maximum size is 10 MB."},
-#             status_code=413,  # Payload Too Large
-#         )
-
-#     return await call_next(request)
-
-
-# Define a Pydantic model to parse input
 class DatePlanRequest(BaseModel):
     start_time: Optional[str] = None  # Start time
     end_time: Optional[str] = None  # End time

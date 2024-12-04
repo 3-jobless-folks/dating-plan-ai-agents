@@ -49,8 +49,8 @@ const AboutPage = () => {
 				<p>
 					Thank you for using our Date Planning app! We hope it helps you plan the perfect date. If you have any questions, feel free to reach out to us via our LinkedIn or GitHub profiles.
 				</p>
-				<a href="/" className="btn btn-primary btn-lg mt-3">
-					Go Back to Date Plan
+				<a href="/dateplan" className="btn btn-primary btn-lg mt-3">
+					Generate more dates
 				</a>
 			</div>
 		</div>

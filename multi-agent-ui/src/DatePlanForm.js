@@ -22,7 +22,7 @@ const DatePlanForm = () => {
 
 	const [errors, setErrors] = useState({});
 	const { isSubmitting, toggleSubmitting } = useSubmit(); // State to track loading status
-	const { show, hide, showPopup } = usePopup();
+	const { showLoading, showSuccess, hide } = usePopup();
 	const navigate = useNavigate();
 
 	// Redirect to login if no token is present
@@ -58,7 +58,7 @@ const DatePlanForm = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		if (!validateForm()) return;
-		show();
+		showLoading(); // Show the loading popup
 		NProgress.start();
 		toggleSubmitting(true); // Start loading
 		console.log("NProgress started...");
@@ -73,8 +73,10 @@ const DatePlanForm = () => {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			console.log("Backend response:", response.data);
-
-			navigate("/result", { state: { result: response.data.result } });
+			showSuccess();
+			setTimeout(() => {
+				navigate("/result", { state: { result: response.data.result } });
+			}, 3000); // 3 seconds delay
 		} catch (error) {
 			console.error("Error sending data to backend", error);
 			alert(error.response?.data?.detail || "Something went wrong!");

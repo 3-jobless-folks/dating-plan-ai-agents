@@ -20,23 +20,16 @@ jobs:
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
+        cache-dependency-path: multi-agent-ui/package-lock.json
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
     - name: Install dependencies
-      run: |
-        cd ./multi-agents-ui
-        npm ci
-      working-directory: ./multi-agents-ui
+      run: npm ci
 
     - name: Build the project (if present)
-      run: |
-        cd ./multi-agents-ui
-        npm run build --if-present
-      working-directory: ./multi-agents-ui
+      run: npm run build --if-present
+      
 
     - name: Run tests
-      run: |
-        cd ./multi-agents-ui
-        npm test
-      working-directory: ./multi-agents-ui
+      run: npm test

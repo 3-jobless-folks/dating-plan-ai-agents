@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa"; // Importing sort icons from react-icons
+import config from "./config";
 
 const IngestEmbeddingsForm = () => {
 	const [error, setError] = useState(null);
@@ -13,6 +14,7 @@ const IngestEmbeddingsForm = () => {
 	const [role, setRole] = useState(null);
 	const [userSortOrder, setUserSortOrder] = useState("asc"); // Sorting order for users
 	const [scheduleSortOrder, setScheduleSortOrder] = useState("asc"); // Sorting order for schedules
+	const API_BASE_URL = config.API_BASE_URL;
 
 	// Pagination state
 	const [userPage, setUserPage] = useState(1);
@@ -25,7 +27,7 @@ const IngestEmbeddingsForm = () => {
 		const token = localStorage.getItem("jwt_token");
 		if (token) {
 			try {
-				const response = await axios.get("http://localhost:8000/get_user_role", {
+				const response = await axios.get(`${API_BASE_URL}/get_user_role`, {
 					headers: { Authorization: `Bearer ${token}` },
 				});
 				setRole(response.data.role);
@@ -38,7 +40,7 @@ const IngestEmbeddingsForm = () => {
 
 	const fetchUsers = async () => {
 		try {
-			const response = await axios.get("http://localhost:8000/get_users");
+			const response = await axios.get(`${API_BASE_URL}/get_users`);
 			setUsers(response.data);
 			setFilteredUsers(response.data);
 		} catch (error) {
@@ -49,7 +51,7 @@ const IngestEmbeddingsForm = () => {
 
 	const fetchSchedules = async () => {
 		try {
-			const response = await axios.get("http://localhost:8000/get_schedules");
+			const response = await axios.get(`${API_BASE_URL}/get_schedules`);
 			setSchedules(response.data);
 			setFilteredSchedules(response.data);
 		} catch (error) {

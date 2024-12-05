@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "./config";
 
 const Register = () => {
 	const [email, setEmail] = useState("");
@@ -13,6 +14,7 @@ const Register = () => {
 	const [errorMessage, setErrorMessage] = useState("");
 	const [isAdmin, setIsAdmin] = useState(false); // New state to check if the user is admin
 	const navigate = useNavigate();
+	const API_BASE_URL = config.API_BASE_URL;
 
 	useEffect(() => {
 		// Check if a user is logged in and if they have an admin role
@@ -41,7 +43,7 @@ const Register = () => {
 		}
 
 		try {
-			const response = await fetch(`http://localhost:8000/register?is_admin=${isAdmin}`, {
+			const response = await fetch(`${API_BASE_URL}/register?is_admin=${isAdmin}`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

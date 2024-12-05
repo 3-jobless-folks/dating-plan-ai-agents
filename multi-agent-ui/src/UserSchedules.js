@@ -1,6 +1,7 @@
 /** @format */
 
 import React, { useState, useEffect } from "react";
+import config from "./config";
 
 function UserSchedules({ userId }) {
 	const [schedules, setSchedules] = useState([]);
@@ -10,6 +11,7 @@ function UserSchedules({ userId }) {
 	const [schedulesPerPage] = useState(5); // Number of schedules to display per page
 	const [sortOrder, setSortOrder] = useState("asc"); // State to manage sorting order
 	const [filterActivity, setFilterActivity] = useState(""); // State for filtering by activity
+	const API_BASE_URL = config.API_BASE_URL;
 
 	useEffect(() => {
 		const fetchSchedules = async () => {
@@ -22,7 +24,7 @@ function UserSchedules({ userId }) {
 				}
 
 				// Make the API call with the token in the Authorization header
-				const response = await fetch(`http://localhost:8000/schedules/`, {
+				const response = await fetch(`${API_BASE_URL}/schedules/`, {
 					method: "GET",
 					headers: {
 						Authorization: `Bearer ${token}`, // Add the token to the header

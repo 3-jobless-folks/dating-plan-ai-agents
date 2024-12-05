@@ -18,7 +18,7 @@ const IngestEmbeddingsForm = () => {
 
 		try {
 			// Make a request to the FastAPI backend to ingest MongoDB data into Pinecone
-			const response = await axios.post("http://localhost:8000/ingest_mongodb_embeddings");
+			const response = await axios.post(`${API_BASE_URL}/ingest_mongodb_embeddings`);
 			console.log("Backend response:", response.data);
 			setMessage(response.data.result);
 		} catch (error) {

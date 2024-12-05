@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class Evaluator(BaseAgent):
 
-    def __init__(self, max_iterations=5):
+    def __init__(self, max_iterations=2):
         super().__init__()
         self.max_iterations = max_iterations
         self.evaluator_prompt = (

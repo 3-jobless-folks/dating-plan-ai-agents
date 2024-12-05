@@ -40,7 +40,6 @@
 body {
 	margin: 0;
 	padding: 0;
-	font-family: 'Helvetica', 'Arial', sans-serif;
 	background-color: #121212; /* Dark background */
 	color: #ffffff; /* White text */
 }
@@ -107,3 +106,26 @@ a.btn-primary:hover {
   margin-bottom: 10px;
 }
 
+/* Customize NProgress */
+#nprogress .bar {
+  background: rgb(35, 36, 36); /* Adjust the color as desired */
+  height: 12px; /* Adjust thickness here */
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px rgb(63, 64, 64), 0 0 5px #29d; /* Optional glow effect */
+  height: 10px; /* Match the thickness of the bar */
+}
+
+
+#nprogress .spinner-icon {
+  border-top-color: #d905f1;
+  border-left-color: #aa00ff;
+}
+
+.image-fit {
+  width: 250px;        /* Set a fixed width */
+  height: 300px;       /* Set a fixed height */
+  object-fit: cover;   /* Ensure the image covers the area while maintaining aspect ratio */
+  border-radius: 50%;  /* Keep the rounded effect */
+}

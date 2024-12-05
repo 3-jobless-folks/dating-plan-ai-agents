@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
-const Login = ({ onLogin }) => {
+const Login = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const { login } = useAuth();
 	const navigate = useNavigate();
 
 	const handleLogin = async (e) => {
@@ -26,7 +28,9 @@ const Login = ({ onLogin }) => {
 
 			if (response.ok) {
 				const data = await response.json();
-				onLogin(data.token); // Pass the token to parent component
+				// Store token in localStorage
+				localStorage.setItem("jwt_token", data.token);
+				login(); // Update authentication state using AuthContext
 				navigate("/dateplan"); // Redirect to the date plan page
 			} else {
 				const errorData = await response.json();
@@ -43,12 +47,28 @@ const Login = ({ onLogin }) => {
 			<h2>Login</h2>
 			<form onSubmit={handleLogin}>
 				<div className="mb-3">
-					<input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required className="form-control" />
+					<input
+						type="email"
+						placeholder="Email"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						required
+						className="form-control mx-auto"
+						style={{ maxWidth: "400px" }} // Makes input narrower
+					/>
 				</div>
 				<div className="mb-3">
-					<input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="form-control" />
+					<input
+						type="password"
+						placeholder="Password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						required
+						className="form-control mx-auto"
+						style={{ maxWidth: "400px" }} // Makes input narrower
+					/>
 				</div>
-				<button type="submit" className="btn btn-primary">
+				<button type="submit" className="btn btn-primary mx-auto d-block" style={{ maxWidth: "400px" }}>
 					Login
 				</button>
 			</form>

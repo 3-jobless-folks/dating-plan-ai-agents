@@ -1,8 +1,8 @@
 # main.py
 from fastapi import FastAPI, UploadFile, File, Request, APIRouter, Query
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
+import requests
 from pydantic import BaseModel
 from dating_plan_ai_agents.objects.pinecone_manager import PineconeManager
 from dating_plan_ai_agents.mongodb.mongo import MongoDBHelper
@@ -10,28 +10,38 @@ import fastapi_helper
 import json
 from dotenv import load_dotenv
 import os
-import uvicorn
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timedelta
 from dating_plan_ai_agents.mongodb.user import User
 from dating_plan_ai_agents.mongodb.schedule import Schedule
-from dating_plan_ai_agents.mongodb.user_role import UserRole
 from fastapi.security import OAuth2PasswordRequestForm
+import boto3
 
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
-# Secret key for encoding and decoding JWT
+# # Secret key for encoding and decoding JWT
 SECRET_KEY = "a_random_secret_key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+load_dotenv()
+# def get_secret(secret_name):
+#     region_name = os.getenv("AWS_REGION", "us-east-1")
+#     client = boto3.client("secretsmanager", region_name=region_name)
+#     response = client.get_secret_value(SecretId=secret_name)
+#     return json.loads(response["SecretString"])
 
+
+# secret = get_secret("my-app/config")
+# SECRET_KEY = secret["SECRET_KEY"]
+# ALGORITHM = secret["ALGORITHM"]
+# ACCESS_TOKEN_EXPIRE_MINUTES = int(secret["ACCESS_TOKEN_EXPIRE_MINUTES"])
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
 router = APIRouter()
 app.include_router(router)
@@ -76,22 +86,6 @@ app.add_middleware(
 )
 
 
-# # Middleware to restrict upload size
-# @app.middleware("http")
-# async def limit_upload_size(request: Request, call_next):
-#     max_upload_size = 10 * 1024 * 1024 * 1024  # 1 GB
-#     content_length = request.headers.get("content-length")
-
-#     if content_length and int(content_length) > max_upload_size:
-#         return JSONResponse(
-#             content={"detail": "Request payload too large. Maximum size is 10 MB."},
-#             status_code=413,  # Payload Too Large
-#         )
-
-#     return await call_next(request)
-
-
-# Define a Pydantic model to parse input
 class DatePlanRequest(BaseModel):
     start_time: Optional[str] = None  # Start time
     end_time: Optional[str] = None  # End time
@@ -105,10 +99,48 @@ class DatePlanRequest(BaseModel):
     other_requirements: Optional[str] = None
 
 
+# Get the current user's role from the token
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        # Decode the JWT token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+        # Extract user information
+        user_id = payload.get("sub")  # Assuming "sub" contains the user ID
+        user_role = payload.get("role")  # Assuming "role" contains the user's role
+
+        # Ensure both user ID and role are present
+        if not user_id or not user_role:
+            raise credentials_exception
+
+        return {"user_id": user_id, "role": user_role}
+
+    except JWTError:
+        raise credentials_exception  # Handles any JWT errors (invalid, expired, etc.)
+
+
+# Check if the current user has admin privileges
+async def is_admin(current_user: dict = Depends(get_current_user)):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+
+
 @app.post("/plan")
-async def create_plan(request: DatePlanRequest):
+async def create_plan(
+    request: DatePlanRequest,
+    user: dict = Depends(get_current_user),
+):
     # Here you would process the multi-agent loop
-    print("Printed")
+    # Extract user info
+    user_id = user.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID missing in token")
+
     start_time = request.start_time
     end_time = request.end_time
     indoor_outdoor = request.indoor_outdoor
@@ -118,7 +150,7 @@ async def create_plan(request: DatePlanRequest):
     activity_preference = request.activity_preference
     other_requirements = request.other_requirements
 
-    result = fastapi_helper.create_workflow(
+    result, final_state = fastapi_helper.create_workflow(
         {
             "start_time": start_time,
             "end_time": end_time,
@@ -130,13 +162,18 @@ async def create_plan(request: DatePlanRequest):
             "other_requirements": other_requirements,
         }
     )
-    print(f"Data type: {type(result)} Final_schedule: {result}")
+    print(f"Final state type: {type(final_state)}, Final state: {final_state}")
     try:
         result = json.loads(result.strip())
         print(f"Json object:{type(result)}:\n {result}")
     except json.JSONDecodeError:
         result = {"error": "Invalid JSON response"}
-
+    final_state["user_id"] = user_id
+    final_state["activities"] = result["activities"]
+    final_state["created_at"] = datetime.now()
+    date_plan = Schedule.model_validate(final_state)
+    schedule_manager = fastapi_helper.get_schedule_manager()
+    schedule_manager.insert_one(date_plan.model_dump())
     return {"result": result}  # Return the result as formatted JSON
 
 
@@ -197,13 +234,11 @@ async def get_users():
 @app.get("/get_schedules", response_model=List[Schedule])
 async def get_schedules():
     schedule_helper = MongoDBHelper(
-        id_field="index_id", db_name="dating", collection_name="schedule"
+        id_field="index_id", db_name="dating", collection_name="schedules"
     )
     schedules = []
     async for schedule in schedule_helper.collection.find():
         schedules.append(schedule)
-    for schedule in schedules:
-        schedule["index_id"] = str(schedule["index_id"])  # Convert ObjectId to string
     return schedules
 
 
@@ -229,33 +264,6 @@ def decode_access_token(token: str):
     except jwt.InvalidTokenError:
         print("Invalid token.")
         return None
-
-
-# Get the current user's role from the token
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=401,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        # Decode the JWT token
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_role = payload.get("role")
-
-        if user_role is None:
-            raise credentials_exception
-
-        return user_role
-
-    except JWTError as e:
-        raise credentials_exception  # Handles any JWT errors (invalid, expired, etc.)
-
-
-# Check if the current user has admin privileges
-def is_admin(current_role: str = Depends(get_current_user)):
-    if current_role != "admin":
-        raise HTTPException(status_code=403, detail="Admin privileges required")
 
 
 @app.post("/register")
@@ -354,3 +362,43 @@ async def get_user_role(token: str = Depends(oauth2_scheme)):
         return {"role": role}  # Return the role
     except jwt.JWTError:
         raise HTTPException(status_code=401, detail="Could not validate credentials")
+
+
+# Endpoint to fetch schedules for a specific user
+@app.get("/schedules")
+async def get_user_schedules(user_id: str = Depends(get_current_user)):
+    print(f'User_id is: {user_id["user_id"]}')
+    user_id = user_id["user_id"]
+    schedule_manager = fastapi_helper.get_schedule_manager()
+    user_schedules_cursor = schedule_manager.find({"user_id": user_id})
+    user_schedules = await user_schedules_cursor.to_list(length=100)
+    print(user_schedules)
+    if not user_schedules:
+        raise HTTPException(
+            status_code=404,
+            detail="No schedules found for the current user.\n Create more schedules now!",
+        )
+    print(f"User schedules found: {user_schedules}")
+    return fastapi_helper.convert_objectid(user_schedules)
+
+GITHUB_API_URL = "https://api.github.com/repos/{owner}/{repo}/issues"
+GITHUB_TOKEN = os.getenv("GITHUB_KEY")  # Replace with your token
+
+
+@app.get("/issues/")
+async def get_github_issues(owner: str, repo: str):
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    url = f"https://api.github.com/repos/{owner}/{repo}/issues"
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        try:
+            issues = response.json()  # Parse the JSON response
+            return issues
+        except requests.exceptions.JSONDecodeError as e:
+            return {"error": "Invalid JSON response from GitHub API", "details": str(e)}
+    else:
+        return {
+            "error": f"Failed to fetch issues from GitHub API. Status code: {response.status_code}",
+            "content": response.text,
+        }

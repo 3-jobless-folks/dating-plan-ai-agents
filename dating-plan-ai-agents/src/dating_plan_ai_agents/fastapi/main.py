@@ -6,7 +6,7 @@ import requests
 from pydantic import BaseModel
 from dating_plan_ai_agents.objects.pinecone_manager import PineconeManager
 from dating_plan_ai_agents.mongodb.mongo import MongoDBHelper
-import fastapi_helper
+from dating_plan_ai_agents.fastapi import fastapi_helper
 import json
 from dotenv import load_dotenv
 import os
@@ -18,40 +18,41 @@ from dating_plan_ai_agents.mongodb.user import User
 from dating_plan_ai_agents.mongodb.schedule import Schedule
 from fastapi.security import OAuth2PasswordRequestForm
 import boto3
+from botocore.exceptions import NoCredentialsError
 
-
+load_dotenv()
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
 # # Secret key for encoding and decoding JWT
-SECRET_KEY = "a_random_secret_key"
-ALGORITHM = "HS256"
+
+
+def get_secret(secret_name):
+    region_name = os.getenv("AWS_REGION", "us-east-1")
+    client = boto3.client("secretsmanager", region_name=region_name)
+    response = client.get_secret_value(SecretId=secret_name)
+    return json.loads(response["SecretString"])
+
+
+try:
+
+    secret = get_secret("my-app/config")
+    SECRET_KEY = secret["SECRET_KEY"]
+    ALGORITHM = secret["ALGORITHM"]
+    print("Got secret from AWS secrets: {} {}".format(SECRET_KEY, ALGORITHM))
+except (NoCredentialsError, ValueError, KeyError) as exp:
+    print(f"Failed to get secret: {exp}, using default values")
+    SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    ALGORITHM = os.getenv("JWT_ALGO")
+
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-load_dotenv()
-# def get_secret(secret_name):
-#     region_name = os.getenv("AWS_REGION", "us-east-1")
-#     client = boto3.client("secretsmanager", region_name=region_name)
-#     response = client.get_secret_value(SecretId=secret_name)
-#     return json.loads(response["SecretString"])
-
-
-# secret = get_secret("my-app/config")
-# SECRET_KEY = secret["SECRET_KEY"]
-# ALGORITHM = secret["ALGORITHM"]
-# ACCESS_TOKEN_EXPIRE_MINUTES = int(secret["ACCESS_TOKEN_EXPIRE_MINUTES"])
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
 router = APIRouter()
 app.include_router(router)
 
 # Allow CORS for the frontend (React app on port 3000)
-origins = [
-    "http://localhost:3000",  # Frontend URL (adjust if necessary)
-    "http://127.0.0.1:3000",  # For local testing
-]
-
+origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
 
 class LogRequestMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -84,6 +85,11 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
 )
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the FastAPI app"}
 
 
 class DatePlanRequest(BaseModel):

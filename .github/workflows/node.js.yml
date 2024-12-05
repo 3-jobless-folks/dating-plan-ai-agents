@@ -26,12 +26,12 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
-      working-directory: ./dating-agents-ui
+      working-directory: ./multi-agents-ui
 
     - name: Build the project (if present)
       run: npm run build --if-present
-      working-directory: ./dating-agents-ui
+      working-directory: ./multi-agents-ui
 
     - name: Run tests
       run: npm test
-      working-directory: ./dating-agents-ui
+      working-directory: ./multi-agents-ui

@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 import { FaHome, FaCalendarAlt, FaList, FaCog, FaSignOutAlt, FaInfoCircle, FaSignInAlt, FaUserPlus, FaUsers, FaCodeBranch } from "react-icons/fa"; // Import React Icons
 
 const Navigation = ({ isLoggedIn, handleLogout }) => {
 	const [isLoading, setIsLoading] = useState(true);
+	const { logout } = useAuth();
+
 	const navigate = useNavigate();
 
 	// Show loading spinner or message while the login status is being determined
@@ -16,6 +19,7 @@ const Navigation = ({ isLoggedIn, handleLogout }) => {
 	// Handle Logout
 	const handleLogoutClick = () => {
 		handleLogout(); // Call logout handler passed from App.js
+		logout();
 		navigate("/login"); // Redirect to login page after logout
 	};
 
@@ -97,6 +101,18 @@ const Navigation = ({ isLoggedIn, handleLogout }) => {
 							</>
 						) : (
 							<>
+								<li className="nav-item dropdown">
+									<a className="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+										<FaInfoCircle /> About Us {/* Adding icon to Admin Console */}
+									</a>
+									<ul className="dropdown-menu" aria-labelledby="navbarDropdown">
+										<li>
+											<Link className="dropdown-item" to="/about">
+												<FaUsers /> The Team {/* Adding icon to Convert Embedding */}
+											</Link>
+										</li>
+									</ul>
+								</li>
 								<li className="nav-item">
 									<Link className="nav-link text-white" to="/login">
 										<FaSignInAlt /> Login {/* Adding icon to Login */}

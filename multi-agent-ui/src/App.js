@@ -1,7 +1,7 @@
 /** @format */
 
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // Remove Switch and use Routes in v6
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navigation from "./Navigation"; // Import Navigation
 import DatePlanForm from "./DatePlanForm";
 import DatePlanResult from "./DatePlanResult";
@@ -17,63 +17,108 @@ import "nprogress/nprogress.css";
 import { SubmitProvider } from "./SubmitContext";
 import { PopupProvider } from "./PopupContext";
 import GitHubIssuesPage from "./GitHubIssuesPage";
+import ProtectedRoute from "./ProtectedRoute"; // Import ProtectedRoute
+import { AuthProvider, useAuth } from "./AuthContext"; // Import useAuth here
 
 // Configure NProgress
 NProgress.configure({
-	showSpinner: true, // Disable spinner
-	speed: 500, // Increase or decrease the speed
-	easing: "ease-in-out", // Change easing effect
+	showSpinner: true,
+	speed: 500,
+	easing: "ease-in-out",
 });
 
 const App = () => {
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	return (
+		<AuthProvider>
+			<SubmitProvider>
+				<PopupProvider>
+					<Router>
+						<div className="App" style={{ fontFamily: "'Poppins', sans-serif" }}>
+							{/* Pass authentication state and logout handler to Navigation */}
+							<AuthContent />
+						</div>
+					</Router>
+				</PopupProvider>
+			</SubmitProvider>
+		</AuthProvider>
+	);
+};
+
+const AuthContent = () => {
+	const { isAuthenticated, login, logout } = useAuth(); // Now it's within AuthProvider
 
 	// Check login status when the app is first loaded
 	useEffect(() => {
 		const token = localStorage.getItem("jwt_token");
 		if (token) {
-			setIsLoggedIn(true); // User is logged in if a token exists
+			login(); // Update authentication state using AuthContext
 		}
-	}, []);
-
-	const handleLogin = (token) => {
-		localStorage.setItem("jwt_token", token); // Save token to localStorage
-		setIsLoggedIn(true); // Update login state
-	};
-
-	const handleLogout = () => {
-		localStorage.removeItem("jwt_token"); // Remove token from localStorage
-		localStorage.removeItem("datePlan");
-		setIsLoggedIn(false); // Update login state
-	};
+	}, [login]);
 
 	return (
-		<SubmitProvider>
-			<PopupProvider>
-				<Router>
-					<div className="App" style={{ fontFamily: "'Poppins', sans-serif" }}>
-						{/* Pass login state and logout handler to Navigation */}
-						<Navigation isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+		<div>
+			<Navigation isLoggedIn={isAuthenticated} handleLogout={logout} />
 
-						{/* Page Routes */}
-						<Routes>
-							<Route path="/" element={<Home />} />
-							<Route path="/dateplan" element={<DatePlanForm />} />
-							<Route path="/result" element={<DatePlanResult />} />
-							<Route path="/userschedules" element={<UserSchedules />} />
-							<Route path="/datamanagement" element={<DataManagement />} />
-							<Route path="/convertemb" element={<IngestEmbeddingsForm />} />
-							<Route path="/login" element={<Login onLogin={handleLogin} />} />
-							<Route path="/register" element={<Register />} />
-							<Route path="/about" element={<AboutPage />} />
-							<Route path="/github-issues" element={<GitHubIssuesPage />} /> {/* Corrected the route */}
-						</Routes>
-					</div>
-				</Router>
-			</PopupProvider>
-		</SubmitProvider>
+			{/* Page Routes */}
+			<Routes>
+				{/* Public Routes */}
+				<Route path="/" element={<Home />} />
+				<Route path="/login" element={<Login />} />
+				<Route path="/register" element={<Register />} />
+				<Route path="/about" element={<AboutPage />} />
+
+				{/* Protected Routes */}
+				<Route
+					path="/dateplan"
+					element={
+						<ProtectedRoute>
+							<DatePlanForm />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/result"
+					element={
+						<ProtectedRoute>
+							<DatePlanResult />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/userschedules"
+					element={
+						<ProtectedRoute>
+							<UserSchedules />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/datamanagement"
+					element={
+						<ProtectedRoute>
+							<DataManagement />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/convertemb"
+					element={
+						<ProtectedRoute>
+							<IngestEmbeddingsForm />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/github-issues"
+					element={
+						<ProtectedRoute>
+							<GitHubIssuesPage />
+						</ProtectedRoute>
+					}
+				/>
+			</Routes>
+		</div>
 	);
 };
 
 export default App;
-

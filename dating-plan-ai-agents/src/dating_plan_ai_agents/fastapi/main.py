@@ -2,6 +2,7 @@
 from fastapi import FastAPI, UploadFile, File, Request, APIRouter, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
+import requests
 from pydantic import BaseModel
 from dating_plan_ai_agents.objects.pinecone_manager import PineconeManager
 from dating_plan_ai_agents.mongodb.mongo import MongoDBHelper
@@ -27,7 +28,7 @@ SECRET_KEY = "a_random_secret_key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-
+load_dotenv()
 # def get_secret(secret_name):
 #     region_name = os.getenv("AWS_REGION", "us-east-1")
 #     client = boto3.client("secretsmanager", region_name=region_name)
@@ -379,3 +380,25 @@ async def get_user_schedules(user_id: str = Depends(get_current_user)):
         )
     print(f"User schedules found: {user_schedules}")
     return fastapi_helper.convert_objectid(user_schedules)
+
+GITHUB_API_URL = "https://api.github.com/repos/{owner}/{repo}/issues"
+GITHUB_TOKEN = os.getenv("GITHUB_KEY")  # Replace with your token
+
+
+@app.get("/issues/")
+async def get_github_issues(owner: str, repo: str):
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    url = f"https://api.github.com/repos/{owner}/{repo}/issues"
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        try:
+            issues = response.json()  # Parse the JSON response
+            return issues
+        except requests.exceptions.JSONDecodeError as e:
+            return {"error": "Invalid JSON response from GitHub API", "details": str(e)}
+    else:
+        return {
+            "error": f"Failed to fetch issues from GitHub API. Status code: {response.status_code}",
+            "content": response.text,
+        }

@@ -1,56 +1,109 @@
 /** @format */
 
+// IssuesPage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Table, Container, Spinner, Badge } from "react-bootstrap";
+import { ExclamationCircle, CheckCircle, PersonFill } from "react-bootstrap-icons";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-const GitHubIssuesPage = () => {
+const IssuesPage = () => {
 	const [issues, setIssues] = useState([]);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		// Fetch GitHub issues using the API
-		axios
-			.get("https://api.github.com/repos/3-jobless-folks/dating-plan-ai-agents/issues")
-			.then((response) => {
+		const fetchIssues = async () => {
+			try {
+				const owner = "3-jobless-folks"; // Replace with your GitHub repo owner
+				const repo = "dating-plan-ai-agents"; // Replace with your GitHub repo name
+				const response = await axios.get(`http://localhost:8000/issues/?owner=${owner}&repo=${repo}`);
+				console.log("API Response:", response.data);
 				setIssues(response.data);
+			} catch (error) {
+				console.error("Error fetching issues:", error);
+			} finally {
 				setLoading(false);
-			})
-			.catch((error) => {
-				console.error("Error fetching GitHub issues:", error);
-				setLoading(false);
-			});
+			}
+		};
+
+		fetchIssues();
 	}, []);
 
-	return (
-		<div className="container mt-5">
-			<h2 className="text-center mb-4">Future Implementations</h2>
+	if (loading) {
+		return (
+			<Container className="text-center mt-5">
+				<Spinner animation="border" role="status" />
+				<p>Loading Issues...</p>
+			</Container>
+		);
+	}
 
-			{loading ? (
-				<div className="text-center">Loading issues...</div>
-			) : issues.length > 0 ? (
-				<div className="row">
-					{issues.map((issue) => (
-						<div className="col-md-4 mb-4" key={issue.id}>
-							<div className="card shadow-sm border-0">
-								<div className="card-body">
-									<h5 className="card-title text-primary">{issue.title}</h5>
-									<p className="card-text text-muted">
-										{/* Add check to ensure issue.body exists */}
-										{issue.body ? issue.body.slice(0, 150) : ""}...
-									</p>
-									<a href={issue.html_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-block">
-										View Issue
-									</a>
-								</div>
-							</div>
-						</div>
+	return (
+		<Container>
+			<h1 className="mt-4 mb-4">GitHub Issues</h1>
+			<Table striped bordered hover responsive className="shadow-sm">
+				<thead className="table-dark">
+					<tr>
+						<th>#</th>
+						<th>Title</th>
+						<th>Status</th>
+						<th>Assignee</th>
+						<th>Created At</th>
+					</tr>
+				</thead>
+				<tbody>
+					{issues.map((issue, index) => (
+						<tr key={issue.id}>
+							<td className="align-middle">{index + 1}</td>
+							<td className="align-middle">
+								<a href={issue.html_url} target="_blank" rel="noopener noreferrer">
+									{issue.title}
+								</a>
+								{issue.labels.length > 0 && (
+									<div className="mt-1">
+										{issue.labels.map((label) => (
+											<Badge
+												key={label.id}
+												style={{
+													backgroundColor: `#${label.color}`,
+													color: "white",
+													marginRight: "4px",
+												}}
+											>
+												{label.name}
+											</Badge>
+										))}
+									</div>
+								)}
+							</td>
+							<td className="align-middle">
+								{issue.state === "open" ? (
+									<Badge bg="warning" className="text-dark">
+										<ExclamationCircle /> Open
+									</Badge>
+								) : (
+									<Badge bg="success">
+										<CheckCircle /> Closed
+									</Badge>
+								)}
+							</td>
+							<td className="align-middle">
+								{issue.assignee ? (
+									<>
+										<PersonFill className="text-primary me-1" />
+										{issue.assignee.login}
+									</>
+								) : (
+									<span className="text-muted">Unassigned</span>
+								)}
+							</td>
+							<td className="align-middle">{new Date(issue.created_at).toLocaleDateString()}</td>
+						</tr>
 					))}
-				</div>
-			) : (
-				<p>No issues found.</p>
-			)}
-		</div>
+				</tbody>
+			</Table>
+		</Container>
 	);
 };
 
-export default GitHubIssuesPage;
+export default IssuesPage;

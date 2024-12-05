@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -24,17 +23,20 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
-    # This step specifies the working directory to the location of your frontend code
     - name: Install dependencies
-      run: npm ci
-      working-directory: ./multi-agents-ui  # <-- Here, specify your correct subfolder path
+      run: |
+        cd ./multi-agents-ui
+        npm ci
+      working-directory: ./multi-agents-ui
 
-    # This step specifies the working directory to the location of your frontend code
     - name: Build the project (if present)
-      run: npm run build --if-present
-      working-directory: ./multi-agents-ui  # <-- Here, specify your correct subfolder path
+      run: |
+        cd ./multi-agents-ui
+        npm run build --if-present
+      working-directory: ./multi-agents-ui
 
-    # This step specifies the working directory to the location of your frontend code
     - name: Run tests
-      run: npm test
-      working-directory: ./multi-agents-ui  # <-- Here, specify your correct subfolder path
+      run: |
+        cd ./multi-agents-ui
+        npm test
+      working-directory: ./multi-agents-ui

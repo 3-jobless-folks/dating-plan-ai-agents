@@ -9,7 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    defaults:
+       run:
+         working-directory: ./multi-agent-ui/
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
@@ -20,7 +22,7 @@ jobs:
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        cache-dependency-path: multi-agent-ui/package-lock.json
+        cache-dependency-path: './multi-agent-ui/package-lock.json'
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
@@ -30,6 +32,5 @@ jobs:
     - name: Build the project (if present)
       run: npm run build --if-present
       
-
     - name: Run tests
       run: npm test

@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -21,20 +20,16 @@ jobs:
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
+        cache-dependency-path: multi-agent-ui/package-lock.json
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
-    # This step specifies the working directory to the location of your frontend code
     - name: Install dependencies
       run: npm ci
-      working-directory: ./multi-agents-ui  # <-- Here, specify your correct subfolder path
 
-    # This step specifies the working directory to the location of your frontend code
     - name: Build the project (if present)
       run: npm run build --if-present
-      working-directory: ./multi-agents-ui  # <-- Here, specify your correct subfolder path
+      
 
-    # This step specifies the working directory to the location of your frontend code
     - name: Run tests
       run: npm test
-      working-directory: ./multi-agents-ui  # <-- Here, specify your correct subfolder path

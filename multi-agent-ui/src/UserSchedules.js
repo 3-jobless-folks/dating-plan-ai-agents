@@ -48,7 +48,7 @@ function UserSchedules({ userId }) {
 		};
 
 		fetchSchedules();
-	}, []);
+	}, [API_BASE_URL]);
 
 	if (loading) return <p>Loading schedules...</p>;
 	if (error) return <p>Error: {error}</p>;

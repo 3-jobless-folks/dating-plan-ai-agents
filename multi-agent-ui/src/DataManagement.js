@@ -64,7 +64,7 @@ const IngestEmbeddingsForm = () => {
 		fetchUsers();
 		fetchSchedules();
 		fetchUserRole();
-	}, []);
+	}, [fetchSchedules, fetchUserRole, fetchUsers]);
 
 	if (role !== "admin") {
 		return <div>You do not have permission to access this page.</div>;

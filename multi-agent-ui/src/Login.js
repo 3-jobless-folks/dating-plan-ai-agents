@@ -27,7 +27,7 @@ const Login = () => {
 				},
 				body: formData,
 			});
-
+			console.log("API base url: ", API_BASE_URL);
 			if (response.ok) {
 				const data = await response.json();
 				// Store token in localStorage
@@ -40,6 +40,7 @@ const Login = () => {
 			}
 		} catch (error) {
 			console.error("Error logging in:", error);
+			console.log("API base url: ", API_BASE_URL);
 			alert("An error occurred. Please try again.");
 		}
 	};

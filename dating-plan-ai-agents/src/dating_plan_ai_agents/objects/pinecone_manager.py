@@ -2,7 +2,7 @@ from pinecone import Pinecone, ServerlessSpec
 import openai
 import pymongo
 import pandas as pd
-from dating_plan_ai_agents.fastapi.main import get_secret
+from dating_plan_ai_agents.objects.utils import get_secret
 from jose.exceptions import JWSError
 from botocore.exceptions import NoCredentialsError, ClientError
 

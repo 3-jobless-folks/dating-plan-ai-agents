@@ -2,7 +2,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from dating_plan_ai_agents.mongodb.review import Review
 import pandas as pd
 import io
-from dating_plan_ai_agents.fastapi.main import get_secret
+from dating_plan_ai_agents.objects.utils import get_secret
 from jose.exceptions import JWSError
 from botocore.exceptions import NoCredentialsError, ClientError
 

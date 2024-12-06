@@ -17,22 +17,16 @@ from datetime import datetime, timedelta
 from dating_plan_ai_agents.mongodb.user import User
 from dating_plan_ai_agents.mongodb.schedule import Schedule
 from fastapi.security import OAuth2PasswordRequestForm
-import boto3
+from jwt import ExpiredSignatureError, InvalidTokenError
 from jose.exceptions import JWSError
 from botocore.exceptions import NoCredentialsError, ClientError
 
 load_dotenv()
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
+from dating_plan_ai_agents.objects.utils import get_secret
 
 # # Secret key for encoding and decoding JWT
-
-
-def get_secret(secret_name):
-    region_name = os.getenv("AWS_REGION", "ap-southeast-1")
-    client = boto3.client("secretsmanager", region_name=region_name)
-    response = client.get_secret_value(SecretId=secret_name)
-    return json.loads(response["SecretString"])
 
 
 try:
@@ -42,6 +36,8 @@ try:
     MONGO_URI = secret["MONGO_URI"]
     API_KEY = secret["API_KEY"]
     ORIGINS = secret["ALLOWED_ORIGINS"].split(",")
+    PINECONE_KEY = secret["PINECONE_KEY"]
+    GITHUB_TOKEN = secret["GITHUB_KEY"]
     print("Got secret from AWS secrets: {} {}".format(SECRET_KEY, ALGORITHM))
 except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
     print(f"Failed to get secret: {exp}, using default values")
@@ -50,7 +46,8 @@ except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
     MONGO_URI = os.getenv("MONGO_URI")
     API_KEY = os.getenv("API_KEY")
     ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
-
+    PINECONE_KEY = os.getenv("PINECONE_KEY")
+    GITHUB_TOKEN = os.getenv("GITHUB_KEY")
 print(f"""Secret key: {SECRET_KEY}, Algorithm: {ALGORITHM}""")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -196,8 +193,8 @@ async def ingest_mongodb_embeddings():
     and store them in Pinecone.
     """
     load_dotenv()
-    openai_key = os.getenv("API_KEY")
-    pc_key = os.getenv("PINECONE_KEY")
+    openai_key = API_KEY
+    pc_key = PINECONE_KEY
     pinecone_manager = PineconeManager(
         pc_api_key=pc_key,
         openai_key=openai_key,
@@ -209,9 +206,7 @@ async def ingest_mongodb_embeddings():
     try:
         print("Ingesting MongoDB data into Pinecone...")
         # Trigger the ingestion of MongoDB data into Pinecone
-        vectors = pinecone_manager.ingest_mongodb(
-            id_field="index_id", text_field="caption"
-        )
+        _ = pinecone_manager.ingest_mongodb(id_field="index_id", text_field="caption")
         return {"result": "Data successfully ingested into Pinecone"}
     except Exception as e:
         return {"error": str(e)}
@@ -270,10 +265,10 @@ def decode_access_token(token: str):
     try:
         decoded_data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return decoded_data
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         print("The token has expired.")
         return None
-    except jwt.InvalidTokenError:
+    except InvalidTokenError:
         print("Invalid token.")
         return None
 
@@ -392,9 +387,6 @@ async def get_user_schedules(user_id: str = Depends(get_current_user)):
         )
     print(f"User schedules found: {user_schedules}")
     return fastapi_helper.convert_objectid(user_schedules)
-
-GITHUB_API_URL = "https://api.github.com/repos/{owner}/{repo}/issues"
-GITHUB_TOKEN = os.getenv("GITHUB_KEY")  # Replace with your token
 
 
 @app.get("/issues/")

@@ -6,19 +6,34 @@ from dating_plan_ai_agents.objects.pinecone_manager import PineconeManager
 from dating_plan_ai_agents.objects.memory_untested import Memory
 from dating_plan_ai_agents.objects.tools_untested import Tools
 from dating_plan_ai_agents.objects.llm import LLM
+from jose.exceptions import JWSError
+from botocore.exceptions import NoCredentialsError, ClientError
+from dating_plan_ai_agents.objects.utils import get_secret
 
 
 class AbstractAgent(ABC):
     """Abstract class for a general agent with memory and tools."""
 
     def __init__(self):
+
         load_dotenv()
         self.memory = Memory()
         self.tools = Tools()
         self.llm_caller = LLM()
+        try:
+            secret = get_secret("my-app/config")
+            pc_api_key_secrets = secret["PINECONE_KEY"]
+            openai_key_secrets = secret["API_KEY"]
+            pc_api_key = pc_api_key_secrets
+            openai_key = openai_key_secrets
+            print("Got secret from AWS secrets: {}, {}".format(pc_api_key, openai_key))
+        except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
+            pc_api_key = os.getenv("PINECONE_KEY")
+            openai_key = os.getenv("API_KEY")
+            print(f"Failed to get secret: {exp}, using default values")
         self.pinecone_manager = PineconeManager(
-            pc_api_key=os.getenv("PINECONE_KEY"),
-            openai_key=os.getenv("API_KEY"),
+            pc_api_key=pc_api_key,
+            openai_key=openai_key,
             index_name="test1",
         )
         self.budget_feedback = "No specific budget yet"

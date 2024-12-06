@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { HashRouter as Router, Route, Routes } from "react-router-dom";
 import Navigation from "./Navigation"; // Import Navigation
 import DatePlanForm from "./DatePlanForm";
 import DatePlanResult from "./DatePlanResult";

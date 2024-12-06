@@ -2,12 +2,21 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from dating_plan_ai_agents.mongodb.review import Review
 import pandas as pd
 import io
-
+from dating_plan_ai_agents.fastapi.main import get_secret
+from jose.exceptions import JWSError
+from botocore.exceptions import NoCredentialsError, ClientError
 
 class MongoDBHelper:
     def __init__(
         self, id_field, db_name, collection_name, mongo_uri="mongodb://localhost:27017"
     ):
+        try:
+            secret = get_secret("my-app/config")
+            mongo_uri_from_secret = secret["MONGO_URI"]
+            self.mongo_uri = mongo_uri_from_secret
+        except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
+            print(f"Failed to get secret: {exp}, using default values")
+            self.mongo_uri = mongo_uri
         self.mongo_uri = mongo_uri
         self.id_field = id_field
         self.db_name = db_name

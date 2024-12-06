@@ -18,7 +18,8 @@ from dating_plan_ai_agents.mongodb.user import User
 from dating_plan_ai_agents.mongodb.schedule import Schedule
 from fastapi.security import OAuth2PasswordRequestForm
 import boto3
-from botocore.exceptions import NoCredentialsError
+from jose.exceptions import JWSError
+from botocore.exceptions import NoCredentialsError, ClientError
 
 load_dotenv()
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -28,22 +29,29 @@ from starlette.requests import Request
 
 
 def get_secret(secret_name):
-    region_name = os.getenv("AWS_REGION", "us-east-1")
+    region_name = os.getenv("AWS_REGION", "ap-southeast-1")
     client = boto3.client("secretsmanager", region_name=region_name)
     response = client.get_secret_value(SecretId=secret_name)
     return json.loads(response["SecretString"])
 
 
 try:
-
     secret = get_secret("my-app/config")
     SECRET_KEY = secret["SECRET_KEY"]
     ALGORITHM = secret["ALGORITHM"]
+    MONGO_URI = secret["MONGO_URI"]
+    API_KEY = secret["API_KEY"]
+    ORIGINS = secret["ALLOWED_ORIGINS"].split(",")
     print("Got secret from AWS secrets: {} {}".format(SECRET_KEY, ALGORITHM))
-except (NoCredentialsError, ValueError, KeyError) as exp:
+except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
     print(f"Failed to get secret: {exp}, using default values")
     SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     ALGORITHM = os.getenv("JWT_ALGO")
+    MONGO_URI = os.getenv("MONGO_URI")
+    API_KEY = os.getenv("API_KEY")
+    ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
+
+print(f"""Secret key: {SECRET_KEY}, Algorithm: {ALGORITHM}""")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -51,8 +59,6 @@ app = FastAPI()
 router = APIRouter()
 app.include_router(router)
 
-# Allow CORS for the frontend (React app on port 3000)
-origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
 
 class LogRequestMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -80,7 +86,7 @@ app.add_middleware(LogRequestMiddleware)
 # Add the CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Allow frontend origins
+    allow_origins=ORIGINS,  # Allow frontend origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
@@ -196,7 +202,7 @@ async def ingest_mongodb_embeddings():
         pc_api_key=pc_key,
         openai_key=openai_key,
         index_name="dating",
-        mongodb_uri="mongodb://localhost:27017",
+        mongodb_uri=MONGO_URI,
         mongodb_db="dating",
         mongodb_collection="reviews",
     )

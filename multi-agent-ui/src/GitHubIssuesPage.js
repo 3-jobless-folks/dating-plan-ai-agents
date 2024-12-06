@@ -29,7 +29,7 @@ const IssuesPage = () => {
 		};
 
 		fetchIssues();
-	}, []);
+	}, [API_BASE_URL]);
 
 	if (loading) {
 		return (

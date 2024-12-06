@@ -2,6 +2,9 @@ from pinecone import Pinecone, ServerlessSpec
 import openai
 import pymongo
 import pandas as pd
+from dating_plan_ai_agents.fastapi.main import get_secret
+from jose.exceptions import JWSError
+from botocore.exceptions import NoCredentialsError, ClientError
 
 
 class PineconeManager:
@@ -16,8 +19,15 @@ class PineconeManager:
         mongodb_collection=None,
     ):
         # Initialize Pinecone connection, OpenAI API key, and MongoDB connection (if applicable)
+        try:
+            secret = get_secret("my-app/config")
+            pc_api_key_secrets = secret["PINECONE_KEY"]
+            self.pc_api_key = pc_api_key_secrets
+            print("Got secret from AWS secrets: {}".format(pc_api_key))
+        except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
+            self.pc_api_key = pc_api_key
+            print(f"Failed to get secret: {exp}, using default values")
         openai.api_key = openai_key
-        self.pc_api_key = pc_api_key
         self.pinecone = Pinecone(api_key=self.pc_api_key)
         self.index_name = index_name
         self.mongodb_uri = mongodb_uri

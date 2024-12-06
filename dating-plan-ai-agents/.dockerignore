@@ -1,0 +1,69 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ignore log files
+*.log
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore virtual environments
+venv/
+.env/
+*.env
+
+# Ignore local settings and configuration files
+.kedro.yml
+.settings.yml
+.kedro_session_store/
+
+# Ignore version control system directories
+.git/
+.gitignore
+.gitattributes
+
+# Ignore data folders and files
+**data/
+data/
+logs/
+results/
+info.log
+
+# Ignore compiled or temporary files
+*.swp
+*.swo
+*.bak
+.DS_Store
+*.tmp
+
+# Ignore build artifacts and distribution packages
+dist/
+build/
+.eggs/
+*.egg-info/
+*.egg
+*.whl
+
+# Ignore IDE/editor settings
+.idea/
+.vscode/
+*.iml
+
+# Ignore any additional configuration files or private keys
+*.pem
+*.key
+.secret
+
+# Ignore Docker-related artifacts
+.dockerignore
+docker-compose.override.yml
+
+# Ignore unnecessary temporary files
+*.cache
+*.lock
+node_modules/
+
+.env.development
+.env.production

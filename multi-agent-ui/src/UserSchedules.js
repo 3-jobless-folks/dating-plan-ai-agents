@@ -11,10 +11,11 @@ function UserSchedules({ userId }) {
 	const [schedulesPerPage] = useState(5); // Number of schedules to display per page
 	const [sortOrder, setSortOrder] = useState("asc"); // State to manage sorting order
 	const [filterActivity, setFilterActivity] = useState(""); // State for filtering by activity
-	const API_BASE_URL = config.API_BASE_URL;
 
 	useEffect(() => {
 		const fetchSchedules = async () => {
+			const configData = await config();
+			const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 			try {
 				// Get the token from localStorage
 				const token = localStorage.getItem("jwt_token");
@@ -24,7 +25,7 @@ function UserSchedules({ userId }) {
 				}
 
 				// Make the API call with the token in the Authorization header
-				const response = await fetch(`${API_BASE_URL}/schedules/`, {
+				const response = await fetch(`${API_BASE_URL}/schedules`, {
 					method: "GET",
 					headers: {
 						Authorization: `Bearer ${token}`, // Add the token to the header
@@ -48,7 +49,7 @@ function UserSchedules({ userId }) {
 		};
 
 		fetchSchedules();
-	}, [API_BASE_URL]);
+	}, []);
 
 	if (loading) return <p>Loading schedules...</p>;
 	if (error) return <p>Error: {error}</p>;

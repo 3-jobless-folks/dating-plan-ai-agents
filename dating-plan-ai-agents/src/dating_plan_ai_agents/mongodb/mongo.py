@@ -7,21 +7,14 @@ from jose.exceptions import JWSError
 from botocore.exceptions import NoCredentialsError, ClientError
 
 class MongoDBHelper:
+
     def __init__(
         self, id_field, db_name, collection_name, mongo_uri="mongodb://localhost:27017"
     ):
-        try:
-            secret = get_secret("my-app/config")
-            mongo_uri_from_secret = secret["MONGO_URI"]
-            self.mongo_uri = mongo_uri_from_secret
-        except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
-            print(f"Failed to get secret: {exp}, using default values")
-            self.mongo_uri = mongo_uri
         self.mongo_uri = mongo_uri
         self.id_field = id_field
         self.db_name = db_name
         self.collection_name = collection_name
-
         print(f"Initializing MongoDBHelper with URI: {self.mongo_uri}")
         self.client = AsyncIOMotorClient(self.mongo_uri)
         print(f"MongoDB client initialized: {self.client}")

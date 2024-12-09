@@ -14,7 +14,6 @@ const Register = () => {
 	const [errorMessage, setErrorMessage] = useState("");
 	const [isAdmin, setIsAdmin] = useState(false); // New state to check if the user is admin
 	const navigate = useNavigate();
-	const API_BASE_URL = config.API_BASE_URL;
 
 	useEffect(() => {
 		// Check if a user is logged in and if they have an admin role
@@ -35,6 +34,8 @@ const Register = () => {
 
 	const handleRegister = async (e) => {
 		e.preventDefault();
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 
 		// Check if passwords match
 		if (password !== confirmPassword) {

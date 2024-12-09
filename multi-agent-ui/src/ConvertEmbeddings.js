@@ -10,13 +10,14 @@ const IngestEmbeddingsForm = () => {
 	const [message, setMessage] = useState(null);
 	const [file, setFile] = useState(null);
 	const [role, setRole] = useState(null);
-	const API_BASE_URL = config.API_BASE_URL;
 
 	// Handle button click to trigger the ingestion process for MongoDB data
 	const handleIngestClick = async () => {
 		setLoading(true);
 		setError(null);
 		setMessage(null);
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 
 		try {
 			// Make a request to the FastAPI backend to ingest MongoDB data into Pinecone

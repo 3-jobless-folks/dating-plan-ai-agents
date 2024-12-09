@@ -9,9 +9,6 @@ from dating_plan_ai_agents.objects.final_agent import FinalPlan
 from dating_plan_ai_agents.mongodb.mongo import MongoDBHelper
 from langgraph.graph import StateGraph, END
 from bson import ObjectId
-import boto3
-import os
-import json
 from passlib.context import CryptContext
 from jose import jwt
 
@@ -88,10 +85,13 @@ def _create_workflow(dating_review_workflow: StateGraph):
     dating_review_workflow.add_edge("finalize_plan", END)
 
 
-def get_user_manager():
+def get_user_manager(mongo_uri: str):
     # MongoDB setup
     user_helper = MongoDBHelper(
-        id_field="index_id", db_name="dating", collection_name="users"
+        id_field="index_id",
+        db_name="dating",
+        collection_name="users",
+        mongo_uri=mongo_uri,
     )
     users_collection = user_helper.collection
 
@@ -115,9 +115,12 @@ def get_user_role_from_token(token: str, secret_key: str, algorithm: str) -> str
     return email, role
 
 
-def get_schedule_manager():
+def get_schedule_manager(mongo_uri: str):
     schedule_helper = MongoDBHelper(
-        id_field="index_id", db_name="dating", collection_name="schedules"
+        id_field="index_id",
+        db_name="dating",
+        collection_name="schedules",
+        mongo_uri=mongo_uri,
     )
     schedule_collection = schedule_helper.collection
     return schedule_collection

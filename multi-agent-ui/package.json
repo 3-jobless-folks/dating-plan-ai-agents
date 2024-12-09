@@ -2,7 +2,7 @@
 	"name": "multi-agent-ui",
 	"version": "0.1.0",
 	"private": true,
-	"homepage": "http://datemee.click",
+	"homepage": "https://3-jobless-folks.github.io/dating-plan-ai-agents",
 	"dependencies": {
 		"@testing-library/jest-dom": "^5.17.0",
 		"@testing-library/react": "^13.4.0",

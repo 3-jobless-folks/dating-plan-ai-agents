@@ -23,7 +23,11 @@ const AboutPage = () => {
 				{["John Doe", "Jane Smith", "Alex Johnson"].map((name, index) => (
 					<div className="col-md-4 mb-4" key={index}>
 						<div className="card shadow-sm">
-							<img src={index === 0 ? "/monkey.jpeg" : index === 1 ? "/panda.jpeg" : "/rabbit.jpeg"} className="card-img-top rounded-circle mx-auto d-block image-fit" alt={name} />
+							<img
+								src={index === 0 ? `${process.env.PUBLIC_URL}/monkey.jpeg` : index === 1 ? `${process.env.PUBLIC_URL}/panda.jpeg` : `${process.env.PUBLIC_URL}/rabbit.jpeg`}
+								className="card-img-top rounded-circle mx-auto d-block image-fit"
+								alt={name}
+							/>
 							<div className="card-body">
 								<h5 className="card-title">{name}</h5>
 								<p className="card-text">{index === 0 ? "Full Stack Developer" : index === 1 ? "Front-End Developer" : "UX/UI Designer"}</p>

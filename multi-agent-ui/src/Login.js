@@ -10,11 +10,11 @@ const Login = () => {
 	const [password, setPassword] = useState("");
 	const { login } = useAuth();
 	const navigate = useNavigate();
-	const API_BASE_URL = config.API_BASE_URL;
 
 	const handleLogin = async (e) => {
 		e.preventDefault();
-
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 		const formData = new URLSearchParams();
 		formData.append("username", email);
 		formData.append("password", password);
@@ -27,7 +27,8 @@ const Login = () => {
 				},
 				body: formData,
 			});
-
+			console.log("API base url: ", API_BASE_URL);
+			console.log("What is in Config? ", configData);
 			if (response.ok) {
 				const data = await response.json();
 				// Store token in localStorage
@@ -40,6 +41,8 @@ const Login = () => {
 			}
 		} catch (error) {
 			console.error("Error logging in:", error);
+			console.log("What is in Config? ", configData);
+			console.log("API base url: ", API_BASE_URL);
 			alert("An error occurred. Please try again.");
 		}
 	};

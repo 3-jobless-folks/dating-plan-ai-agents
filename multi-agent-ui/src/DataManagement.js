@@ -1,6 +1,6 @@
 /** @format */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa"; // Importing sort icons from react-icons
 import config from "./config";
@@ -14,7 +14,6 @@ const IngestEmbeddingsForm = () => {
 	const [role, setRole] = useState(null);
 	const [userSortOrder, setUserSortOrder] = useState("asc"); // Sorting order for users
 	const [scheduleSortOrder, setScheduleSortOrder] = useState("asc"); // Sorting order for schedules
-	const API_BASE_URL = config.API_BASE_URL;
 
 	// Pagination state
 	const [userPage, setUserPage] = useState(1);
@@ -23,8 +22,10 @@ const IngestEmbeddingsForm = () => {
 	const schedulesPerPage = 5;
 
 	// Fetch data and roles
-	const fetchUserRole = async () => {
+	const fetchUserRole = useCallback(async () => {
 		const token = localStorage.getItem("jwt_token");
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 		if (token) {
 			try {
 				const response = await axios.get(`${API_BASE_URL}/get_user_role`, {
@@ -36,9 +37,11 @@ const IngestEmbeddingsForm = () => {
 				setError("Failed to fetch user role.");
 			}
 		}
-	};
+	}, []);
 
-	const fetchUsers = async () => {
+	const fetchUsers = useCallback(async () => {
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 		try {
 			const response = await axios.get(`${API_BASE_URL}/get_users`);
 			setUsers(response.data);
@@ -47,9 +50,11 @@ const IngestEmbeddingsForm = () => {
 			console.error("Error fetching users:", error);
 			setError("Failed to fetch users.");
 		}
-	};
+	}, []);
 
-	const fetchSchedules = async () => {
+	const fetchSchedules = useCallback(async () => {
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 		try {
 			const response = await axios.get(`${API_BASE_URL}/get_schedules`);
 			setSchedules(response.data);
@@ -58,13 +63,13 @@ const IngestEmbeddingsForm = () => {
 			console.error("Error fetching schedules:", error);
 			setError("Failed to fetch schedules.");
 		}
-	};
+	}, []);
 
 	useEffect(() => {
 		fetchUsers();
 		fetchSchedules();
 		fetchUserRole();
-	}, []);
+	}, [fetchSchedules, fetchUserRole, fetchUsers]);
 
 	if (role !== "admin") {
 		return <div>You do not have permission to access this page.</div>;

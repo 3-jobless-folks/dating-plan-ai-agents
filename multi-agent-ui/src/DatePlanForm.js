@@ -20,7 +20,6 @@ const DatePlanForm = () => {
 		activity_preference: "",
 		other_requirements: "",
 	});
-	const API_BASE_URL = config.API_BASE_URL;
 	const [errors, setErrors] = useState({});
 	const { isSubmitting, toggleSubmitting } = useSubmit(); // State to track loading status
 	const { showLoading, showSuccess, hide } = usePopup();
@@ -58,6 +57,8 @@ const DatePlanForm = () => {
 	// Handle form submission
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 		if (!validateForm()) return;
 		showLoading(); // Show the loading popup
 		NProgress.start();

@@ -6,7 +6,7 @@ import requests
 from pydantic import BaseModel
 from dating_plan_ai_agents.objects.pinecone_manager import PineconeManager
 from dating_plan_ai_agents.mongodb.mongo import MongoDBHelper
-import fastapi_helper
+from dating_plan_ai_agents.fastapi import fastapi_helper
 import json
 from dotenv import load_dotenv
 import os
@@ -17,40 +17,61 @@ from datetime import datetime, timedelta
 from dating_plan_ai_agents.mongodb.user import User
 from dating_plan_ai_agents.mongodb.schedule import Schedule
 from fastapi.security import OAuth2PasswordRequestForm
-import boto3
-
-
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-
-# # Secret key for encoding and decoding JWT
-SECRET_KEY = "a_random_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+from jwt import ExpiredSignatureError, InvalidTokenError
+from jose.exceptions import JWSError
+from botocore.exceptions import NoCredentialsError, ClientError
 
 load_dotenv()
-# def get_secret(secret_name):
-#     region_name = os.getenv("AWS_REGION", "us-east-1")
-#     client = boto3.client("secretsmanager", region_name=region_name)
-#     response = client.get_secret_value(SecretId=secret_name)
-#     return json.loads(response["SecretString"])
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from dating_plan_ai_agents.objects.utils import get_secret
 
+# # Secret key for encoding and decoding JWT
+is_test = False
+if not is_test:
+    try:
+        secret = get_secret("my-app/config")
+        SECRET_KEY = secret["JWT_SECRET_KEY"]
+        ALGORITHM = secret["JWT_ALGO"]
+        MONGO_URI = secret["MONGO_URI"]
+        API_KEY = secret["API_KEY"]
+        ORIGINS = secret["ALLOWED_ORIGINS"].split(",")
+        PINECONE_KEY = secret["PINECONE_KEY"]
+        GITHUB_TOKEN = secret["GITHUB_KEY"]
+        print("Got secret from AWS secrets: {} {}".format(SECRET_KEY, ALGORITHM))
+        print(
+            f"Gettting secret from AWS: {MONGO_URI}, {API_KEY}, {ORIGINS}, {PINECONE_KEY}, {GITHUB_TOKEN}"
+        )
+    except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
+        print(f"Failed to get secret: {exp}, using default values")
+        SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+        ALGORITHM = os.getenv("JWT_ALGO")
+        MONGO_URI = os.getenv("MONGO_URI")
+        API_KEY = os.getenv("API_KEY")
+        ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
+        PINECONE_KEY = os.getenv("PINECONE_KEY")
+        GITHUB_TOKEN = os.getenv("GITHUB_KEY")
+        print(
+            f"Getting secreats from env: {SECRET_KEY}, {ALGORITHM}, {MONGO_URI}, {API_KEY}, {ORIGINS}, {PINECONE_KEY}, {GITHUB_TOKEN}"
+        )
 
-# secret = get_secret("my-app/config")
-# SECRET_KEY = secret["SECRET_KEY"]
-# ALGORITHM = secret["ALGORITHM"]
-# ACCESS_TOKEN_EXPIRE_MINUTES = int(secret["ACCESS_TOKEN_EXPIRE_MINUTES"])
+else:
+    SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    ALGORITHM = os.getenv("JWT_ALGO")
+    MONGO_URI = os.getenv("MONGO_URI")
+    API_KEY = os.getenv("API_KEY")
+    ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
+    PINECONE_KEY = os.getenv("PINECONE_KEY")
+    GITHUB_TOKEN = os.getenv("GITHUB_KEY")
+    print(
+        f"Getting secreats from env: {SECRET_KEY}, {ALGORITHM}, {MONGO_URI}, {API_KEY}, {ORIGINS}, {PINECONE_KEY}, {GITHUB_TOKEN}"
+    )
 
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
 router = APIRouter()
 app.include_router(router)
-
-# Allow CORS for the frontend (React app on port 3000)
-origins = [
-    "http://localhost:3000",  # Frontend URL (adjust if necessary)
-    "http://127.0.0.1:3000",  # For local testing
-]
 
 
 class LogRequestMiddleware(BaseHTTPMiddleware):
@@ -79,11 +100,16 @@ app.add_middleware(LogRequestMiddleware)
 # Add the CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Allow frontend origins
+    allow_origins=ORIGINS,  # Allow frontend origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
 )
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the FastAPI app"}
 
 
 class DatePlanRequest(BaseModel):
@@ -172,7 +198,7 @@ async def create_plan(
     final_state["activities"] = result["activities"]
     final_state["created_at"] = datetime.now()
     date_plan = Schedule.model_validate(final_state)
-    schedule_manager = fastapi_helper.get_schedule_manager()
+    schedule_manager = fastapi_helper.get_schedule_manager(mongo_uri=MONGO_URI)
     schedule_manager.insert_one(date_plan.model_dump())
     return {"result": result}  # Return the result as formatted JSON
 
@@ -184,22 +210,20 @@ async def ingest_mongodb_embeddings():
     and store them in Pinecone.
     """
     load_dotenv()
-    openai_key = os.getenv("API_KEY")
-    pc_key = os.getenv("PINECONE_KEY")
+    openai_key = API_KEY
+    pc_key = PINECONE_KEY
     pinecone_manager = PineconeManager(
         pc_api_key=pc_key,
         openai_key=openai_key,
         index_name="dating",
-        mongodb_uri="mongodb://localhost:27017",
+        mongodb_uri=MONGO_URI,
         mongodb_db="dating",
         mongodb_collection="reviews",
     )
     try:
         print("Ingesting MongoDB data into Pinecone...")
         # Trigger the ingestion of MongoDB data into Pinecone
-        vectors = pinecone_manager.ingest_mongodb(
-            id_field="index_id", text_field="caption"
-        )
+        _ = pinecone_manager.ingest_mongodb(id_field="index_id", text_field="caption")
         return {"result": "Data successfully ingested into Pinecone"}
     except Exception as e:
         return {"error": str(e)}
@@ -209,7 +233,10 @@ async def ingest_mongodb_embeddings():
 async def upload_csv(file: UploadFile = File(...)):
 
     mongo_helper = MongoDBHelper(
-        id_field="index_id", db_name="dating", collection_name="reviews"
+        id_field="index_id",
+        db_name="dating",
+        collection_name="reviews",
+        mongo_uri=MONGO_URI,
     )
     # Read the content of the uploaded file and convert it to MongoDB
     contents = await file.read()
@@ -221,7 +248,7 @@ async def upload_csv(file: UploadFile = File(...)):
 
 @app.get("/get_users", response_model=List[User])
 async def get_users():
-    users_collection, _ = fastapi_helper.get_user_manager()
+    users_collection, _ = fastapi_helper.get_user_manager(mongo_uri=MONGO_URI)
     users = []
     async for user in users_collection.find():
         users.append(user)
@@ -234,7 +261,10 @@ async def get_users():
 @app.get("/get_schedules", response_model=List[Schedule])
 async def get_schedules():
     schedule_helper = MongoDBHelper(
-        id_field="index_id", db_name="dating", collection_name="schedules"
+        id_field="index_id",
+        db_name="dating",
+        collection_name="schedules",
+        mongo_uri=MONGO_URI,
     )
     schedules = []
     async for schedule in schedule_helper.collection.find():
@@ -258,10 +288,10 @@ def decode_access_token(token: str):
     try:
         decoded_data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return decoded_data
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         print("The token has expired.")
         return None
-    except jwt.InvalidTokenError:
+    except InvalidTokenError:
         print("Invalid token.")
         return None
 
@@ -274,7 +304,7 @@ async def create_user(
     # Log raw data for debugging (remove in production)
     for key, value in user.model_dump().items():
         print(f"{key}: {type(value).__name__}")
-    users_collection, pwd_context = fastapi_helper.get_user_manager()
+    users_collection, pwd_context = fastapi_helper.get_user_manager(mongo_uri=MONGO_URI)
     # Check if the email already exists
     existing_user = await users_collection.find_one({"email": user.email})
     if existing_user:
@@ -318,7 +348,7 @@ async def create_user(
 # Login endpoint
 @app.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    users_collection, pwd_context = fastapi_helper.get_user_manager()
+    users_collection, pwd_context = fastapi_helper.get_user_manager(mongo_uri=MONGO_URI)
     # Find user by email
     user = await users_collection.find_one({"email": form_data.username})
     if not user:
@@ -369,7 +399,7 @@ async def get_user_role(token: str = Depends(oauth2_scheme)):
 async def get_user_schedules(user_id: str = Depends(get_current_user)):
     print(f'User_id is: {user_id["user_id"]}')
     user_id = user_id["user_id"]
-    schedule_manager = fastapi_helper.get_schedule_manager()
+    schedule_manager = fastapi_helper.get_schedule_manager(mongo_uri=MONGO_URI)
     user_schedules_cursor = schedule_manager.find({"user_id": user_id})
     user_schedules = await user_schedules_cursor.to_list(length=100)
     print(user_schedules)
@@ -380,9 +410,6 @@ async def get_user_schedules(user_id: str = Depends(get_current_user)):
         )
     print(f"User schedules found: {user_schedules}")
     return fastapi_helper.convert_objectid(user_schedules)
-
-GITHUB_API_URL = "https://api.github.com/repos/{owner}/{repo}/issues"
-GITHUB_TOKEN = os.getenv("GITHUB_KEY")  # Replace with your token
 
 
 @app.get("/issues/")

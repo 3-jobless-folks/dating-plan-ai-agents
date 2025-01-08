@@ -115,3 +115,23 @@ npm start
 ```bash
 	"API_BASE_URL": "https://datemee.click"
 ```
+
+## Environment variables needed
+- API_KEY = "openai-api-key"
+
+- LANGCHAIN_TRACING_V2=true
+- LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
+- LANGCHAIN_API_KEY="your-langsmith-api-key"
+- LANGCHAIN_PROJECT="your-langsmith-project-name"
+
+- PINECONE_KEY = "your-pinecone-api-key"
+
+- GITHUB_KEY = "your-github-api-key"
+
+- ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+- JWT_SECRET_KEY ="a-JWT-secret-key"
+
+- JWT_ALGO ="your-jwt-algo-used"
+
+- MONGO_URI=mongodb://localhost:27017

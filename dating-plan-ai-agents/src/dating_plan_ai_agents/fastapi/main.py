@@ -27,7 +27,7 @@ from starlette.requests import Request
 from dating_plan_ai_agents.objects.utils import get_secret
 
 # # Secret key for encoding and decoding JWT
-is_test = False
+is_test = True
 if not is_test:
     try:
         secret = get_secret("my-app/config")

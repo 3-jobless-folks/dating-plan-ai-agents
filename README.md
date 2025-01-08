@@ -207,3 +207,8 @@ Ensure you are in the project root folder and run the following command:
 npm build
 npm start
 ```
+
+## Note: For deployment backend build, ensure that is_test is set to False in main.py and config.json is the following config:
+```bash
+	"API_BASE_URL": "https://datemee.click"
+```

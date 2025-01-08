@@ -1,6 +1,7 @@
 /** @format */
 
 import React, { useState, useEffect } from "react";
+import config from "./config";
 
 function UserSchedules({ userId }) {
 	const [schedules, setSchedules] = useState([]);
@@ -13,6 +14,8 @@ function UserSchedules({ userId }) {
 
 	useEffect(() => {
 		const fetchSchedules = async () => {
+			const configData = await config();
+			const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 			try {
 				// Get the token from localStorage
 				const token = localStorage.getItem("jwt_token");
@@ -22,7 +25,7 @@ function UserSchedules({ userId }) {
 				}
 
 				// Make the API call with the token in the Authorization header
-				const response = await fetch(`http://localhost:8000/schedules/`, {
+				const response = await fetch(`${API_BASE_URL}/schedules`, {
 					method: "GET",
 					headers: {
 						Authorization: `Bearer ${token}`, // Add the token to the header

@@ -6,6 +6,7 @@ import axios from "axios";
 import { Table, Container, Spinner, Badge } from "react-bootstrap";
 import { ExclamationCircle, CheckCircle, PersonFill } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
+import config from "./config";
 
 const IssuesPage = () => {
 	const [issues, setIssues] = useState([]);
@@ -14,9 +15,11 @@ const IssuesPage = () => {
 	useEffect(() => {
 		const fetchIssues = async () => {
 			try {
-				const owner = "3-jobless-folks"; // Replace with your GitHub repo owner
-				const repo = "dating-plan-ai-agents"; // Replace with your GitHub repo name
-				const response = await axios.get(`http://localhost:8000/issues/?owner=${owner}&repo=${repo}`);
+				const configData = await config();
+				const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
+				const owner = "3-jobless-folks";
+				const repo = "dating-plan-ai-agents";
+				const response = await axios.get(`${API_BASE_URL}/issues/?owner=${owner}&repo=${repo}`);
 				console.log("API Response:", response.data);
 				setIssues(response.data);
 			} catch (error) {

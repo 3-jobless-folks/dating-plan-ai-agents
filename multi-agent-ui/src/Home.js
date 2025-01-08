@@ -3,6 +3,7 @@
 // src/Home.js
 import "./App.css"; // Ensure this is imported after Bootstrap
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Home = () => {
 	return (
@@ -20,20 +21,20 @@ const Home = () => {
 					<li>🎁 Customizable plans that adapt as you select your preferences</li>
 				</ul>
 			</div>
-			<a href="/dateplan" className="btn btn-primary btn-lg px-4 py-2 mt-3">
+			<Link className="btn btn-primary btn-lg px-4 py-2 mt-3" to="/dateplan">
 				Get Started
-			</a>
+			</Link>
 			<p className="mt-4">
 				Already have an account?{" "}
-				<a href="/login" className="text-primary">
+				<Link className="text-primary" to="/login">
 					Log in here
-				</a>
+				</Link>
 			</p>
 			<p>
 				Don't have an account yet?{" "}
-				<a href="/register" className="text-primary">
+				<Link className="text-primary" to="/register">
 					Register now
-				</a>
+				</Link>
 			</p>
 		</div>
 	);

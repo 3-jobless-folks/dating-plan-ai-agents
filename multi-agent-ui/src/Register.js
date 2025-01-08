@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "./config";
 
 const Register = () => {
 	const [email, setEmail] = useState("");
@@ -33,6 +34,8 @@ const Register = () => {
 
 	const handleRegister = async (e) => {
 		e.preventDefault();
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 
 		// Check if passwords match
 		if (password !== confirmPassword) {
@@ -41,7 +44,7 @@ const Register = () => {
 		}
 
 		try {
-			const response = await fetch(`http://localhost:8000/register?is_admin=${isAdmin}`, {
+			const response = await fetch(`${API_BASE_URL}/register?is_admin=${isAdmin}`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

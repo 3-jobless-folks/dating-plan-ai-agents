@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import config from "./config";
 
 const IngestEmbeddingsForm = () => {
 	const [loading, setLoading] = useState(false);
@@ -15,10 +16,12 @@ const IngestEmbeddingsForm = () => {
 		setLoading(true);
 		setError(null);
 		setMessage(null);
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 
 		try {
 			// Make a request to the FastAPI backend to ingest MongoDB data into Pinecone
-			const response = await axios.post("http://localhost:8000/ingest_mongodb_embeddings");
+			const response = await axios.post(`${API_BASE_URL}/ingest_mongodb_embeddings`);
 			console.log("Backend response:", response.data);
 			setMessage(response.data.result);
 		} catch (error) {

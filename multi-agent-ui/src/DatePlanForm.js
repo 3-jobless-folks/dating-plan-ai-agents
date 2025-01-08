@@ -7,6 +7,7 @@ import "nprogress/nprogress.css";
 import { useNavigate } from "react-router-dom";
 import { useSubmit } from "./SubmitContext";
 import { usePopup } from "./PopupContext";
+import config from "./config";
 
 const DatePlanForm = () => {
 	const [formData, setFormData] = useState({
@@ -19,7 +20,6 @@ const DatePlanForm = () => {
 		activity_preference: "",
 		other_requirements: "",
 	});
-
 	const [errors, setErrors] = useState({});
 	const { isSubmitting, toggleSubmitting } = useSubmit(); // State to track loading status
 	const { showLoading, showSuccess, hide } = usePopup();
@@ -57,6 +57,8 @@ const DatePlanForm = () => {
 	// Handle form submission
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		const configData = await config();
+		const API_BASE_URL = configData?.API_BASE_URL || "https://datemee.click";
 		if (!validateForm()) return;
 		showLoading(); // Show the loading popup
 		NProgress.start();
@@ -69,7 +71,7 @@ const DatePlanForm = () => {
 				throw new Error("Token is missing, please log in.");
 			}
 
-			const response = await axios.post("http://localhost:8000/plan", formData, {
+			const response = await axios.post(`${API_BASE_URL}/plan`, formData, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			console.log("Backend response:", response.data);

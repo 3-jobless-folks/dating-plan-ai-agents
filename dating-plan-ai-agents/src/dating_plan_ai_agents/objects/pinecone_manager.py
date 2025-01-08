@@ -2,6 +2,7 @@ from pinecone import Pinecone, ServerlessSpec
 import openai
 import pymongo
 import pandas as pd
+from dating_plan_ai_agents.objects.utils import get_secret
 
 
 class PineconeManager:
@@ -15,8 +16,7 @@ class PineconeManager:
         mongodb_db=None,
         mongodb_collection=None,
     ):
-        # Initialize Pinecone connection, OpenAI API key, and MongoDB connection (if applicable)
-        openai.api_key = openai_key
+        self.openai_key = openai_key
         self.pc_api_key = pc_api_key
         self.pinecone = Pinecone(api_key=self.pc_api_key)
         self.index_name = index_name
@@ -33,13 +33,14 @@ class PineconeManager:
             )
         self.index = self.pinecone.Index(self.index_name)
         self.embedding_model = "text-embedding-3-small"
-        if mongodb_uri:
+        if self.mongodb_uri:
             self.mongo_client = pymongo.MongoClient(self.mongodb_uri)
             self.db = self.mongo_client[self.mongodb_db]
             self.collection = self.db[self.mongodb_collection]
 
     def _generate_one_embedding(self, text):
         # Generate embedding for a single text using OpenAI API
+        openai.api_key = self.openai_key
         res = openai.embeddings.create(
             input=text,
             model=self.embedding_model,

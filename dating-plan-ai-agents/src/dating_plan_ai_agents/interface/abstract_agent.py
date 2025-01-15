@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from dating_plan_ai_agents.objects.pinecone_manager import PineconeManager
 from dating_plan_ai_agents.objects.memory_untested import Memory
 from dating_plan_ai_agents.objects.tools_untested import Tools
-from dating_plan_ai_agents.objects.llm import LLM
+from dating_plan_ai_agents.objects.llm.openai_llm import OpenAILLM
 from jose.exceptions import JWSError
 from botocore.exceptions import NoCredentialsError, ClientError
 from dating_plan_ai_agents.objects.utils import get_secret
@@ -21,12 +21,12 @@ class AbstractAgent(ABC):
         load_dotenv()
         self.memory = Memory()
         self.tools = Tools()
-        self.llm_caller = LLM()
+        self.llm_caller = OpenAILLM()
         try:
             secret = get_secret("my-app/config")
             mongo_uri = secret["MONGO_URI"]
             pc_api_key = secret["PINECONE_KEY"]
-            openai_key = secret["API_KEY"]
+            openai_key = secret["OPENAI_API_KEY"]
             print(
                 "Got secret from AWS secrets: {}, {}, {}".format(
                     mongo_uri, pc_api_key, openai_key
@@ -34,7 +34,7 @@ class AbstractAgent(ABC):
             )
         except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
             pc_api_key = os.getenv("PINECONE_KEY")
-            openai_key = os.getenv("API_KEY")
+            openai_key = os.getenv("OPENAI_API_KEY")
             mongo_uri = os.getenv("MONGO_URI")
             print(f"Failed to get secret: {exp}, using default values")
         self.pinecone_manager = PineconeManager(

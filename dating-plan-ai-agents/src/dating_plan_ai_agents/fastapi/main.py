@@ -34,37 +34,37 @@ if not is_test:
         SECRET_KEY = secret["JWT_SECRET_KEY"]
         ALGORITHM = secret["JWT_ALGO"]
         MONGO_URI = secret["MONGO_URI"]
-        OPENAI_API_KEY = secret["OPENAI_API_KEY"]
+        API_KEY = secret["API_KEY"]
         ORIGINS = secret["ALLOWED_ORIGINS"].split(",")
         PINECONE_KEY = secret["PINECONE_KEY"]
         GITHUB_TOKEN = secret["GITHUB_KEY"]
         print("Got secret from AWS secrets: {} {}".format(SECRET_KEY, ALGORITHM))
         print(
-            f"Gettting secret from AWS: {MONGO_URI}, {OPENAI_API_KEY}, {ORIGINS}, {PINECONE_KEY}, {GITHUB_TOKEN}"
+            f"Gettting secret from AWS: {MONGO_URI}, {API_KEY}, {ORIGINS}, {PINECONE_KEY}, {GITHUB_TOKEN}"
         )
     except (NoCredentialsError, ValueError, KeyError, ClientError, JWSError) as exp:
         print(f"Failed to get secret: {exp}, using default values")
         SECRET_KEY = os.getenv("JWT_SECRET_KEY")
         ALGORITHM = os.getenv("JWT_ALGO")
         MONGO_URI = os.getenv("MONGO_URI")
-        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        API_KEY = os.getenv("API_KEY")
         ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
         PINECONE_KEY = os.getenv("PINECONE_KEY")
         GITHUB_TOKEN = os.getenv("GITHUB_KEY")
         print(
-            f"Getting secreats from env: {SECRET_KEY}, {ALGORITHM}, {MONGO_URI}, {OPENAI_API_KEY}, {ORIGINS}, {PINECONE_KEY}, {GITHUB_TOKEN}"
+            f"Getting secreats from env: {SECRET_KEY}, {ALGORITHM}, {MONGO_URI}, {API_KEY}, {ORIGINS}, {PINECONE_KEY}, {GITHUB_TOKEN}"
         )
 
 else:
     SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     ALGORITHM = os.getenv("JWT_ALGO")
     MONGO_URI = os.getenv("MONGO_URI")
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    API_KEY = os.getenv("API_KEY")
     ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
     PINECONE_KEY = os.getenv("PINECONE_KEY")
     GITHUB_TOKEN = os.getenv("GITHUB_KEY")
     print(
-        f"Getting secreats from env: {SECRET_KEY}, {ALGORITHM}, {MONGO_URI}, {OPENAI_API_KEY}, {ORIGINS}, {PINECONE_KEY}, {GITHUB_TOKEN}"
+        f"Getting secreats from env: {SECRET_KEY}, {ALGORITHM}, {MONGO_URI}, {API_KEY}, {ORIGINS}, {PINECONE_KEY}, {GITHUB_TOKEN}"
     )
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -210,7 +210,7 @@ async def ingest_mongodb_embeddings():
     and store them in Pinecone.
     """
     load_dotenv()
-    openai_key = OPENAI_API_KEY
+    openai_key = API_KEY
     pc_key = PINECONE_KEY
     pinecone_manager = PineconeManager(
         pc_api_key=pc_key,
